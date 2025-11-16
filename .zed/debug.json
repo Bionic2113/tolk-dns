@@ -1,0 +1,18 @@
+// Project-local debug tasks
+//
+// For more documentation on how to configure debug tasks,
+// see: https://zed.dev/docs/debugger
+[
+    {
+        "adapter": "ton",
+        "label": "TonFunc",
+        "args": [],
+        "cwd": "/Users/bionic/ton_projects/tolk_dns",
+        "env": {},
+        "program": " ",
+        "command": "yarn test TonDNS",
+        "request": "launch",
+        "stopOnEntry": false,
+        "type": "tvm"
+    }
+]

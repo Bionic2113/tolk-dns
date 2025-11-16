@@ -1,0 +1,446 @@
+"Asm.fif" include
+// automatically generated from `stdlib.fc` `params.fc` `op-codes.fc` `dns-utils.fc` `nft-collection.fc` 
+PROGRAM{
+  DECLPROC force_chain
+  DECLPROC zero_address
+  DECLPROC get_top_domain_bits
+  DECLPROC read_domain_from_comment
+  DECLPROC check_domain_string
+  DECLPROC get_min_price_config
+  DECLPROC get_min_price
+  DECLPROC load_data
+  DECLPROC save_data
+  DECLPROC calculate_nft_item_state_init
+  DECLPROC calculate_nft_item_address
+  DECLPROC deploy_nft_item
+  DECLPROC recv_internal
+  102491 DECLMETHOD get_collection_data
+  92067 DECLMETHOD get_nft_address_by_index
+  68445 DECLMETHOD get_nft_content
+  123660 DECLMETHOD dnsresolve
+  force_chain PROC:<{
+    REWRITESTDADDR
+    DROP
+    0 PUSHINT
+    EQUAL
+    333 THROWIFNOT
+  }>
+  zero_address PROC:<{
+    0 PUSHINT
+    NEWC
+    2 STU
+    ENDC
+    CTOS
+  }>
+  get_top_domain_bits PROC:<{
+    0 PUSHINT
+    UNTIL:<{
+      SWAP
+      8 LDU
+      SWAP
+      0 EQINT
+      DUP
+      NOT
+      IF:<{
+        s0 s2 XCHG
+        8 ADDCONST
+        s0 s2 XCHG
+      }>
+      s1 s2 XCHG
+    }>
+    NIP
+    DUP
+    0 EQINT
+    201 THROWIF
+  }>
+  read_domain_from_comment PROC:<{
+    NEWC
+    UNTIL:<{
+      OVER
+      SBITS
+      s1 s2 XCHG
+      LDSLICEX
+      -ROT
+      STSLICER
+      OVER
+      SREFS
+      DUP
+      0 EQINT
+      DUP
+      NOT
+      IF:<{
+        SWAP
+        1 EQINT
+        2022 THROWIFNOT
+        s0 s2 XCHG
+        LDREF
+        DROP
+        CTOS
+        s0 s2 XCHG
+      }>ELSE<{
+        NIP
+      }>
+    }>
+    NIP
+    ENDC
+    CTOS
+  }>
+  check_domain_string PROC:<{
+    0 PUSHINT
+    OVER
+    SBITS
+    UNTIL:<{
+      2DUP
+      EQUAL
+      DUP
+      NOT
+      IF:<{
+        DROP
+        s0 s2 XCHG
+        8 LDU
+        OVER
+        45 EQINT
+        s3 PUSH
+        0 GTINT
+        AND
+        s4 PUSH
+        -8 ADDCONST
+        s4 s(-1) PUXC
+        LESS
+        AND
+        s2 PUSH
+        47 GTINT
+        s3 PUSH
+        58 LESSINT
+        AND
+        OR
+        s2 PUSH
+        96 GTINT
+        s0 s3 XCHG
+        123 LESSINT
+        s1 s3 XCHG
+        AND
+        s1 s2 XCHG
+        OR
+        NOT
+        DUP
+        NOT
+        IF:<{
+          s0 s2 XCHG
+          8 ADDCONST
+          s0 s2 XCHG
+        }>
+        s1 s3 XCHG
+      }>
+    }>
+    1 2 BLKDROP2
+    EQUAL
+  }>
+  get_min_price_config PROC:<{
+    DUP
+    4 EQINT
+    IFJMP:<{
+      DROP
+      1000 PUSHINT
+      100 PUSHINT
+    }>
+    DUP
+    5 EQINT
+    IFJMP:<{
+      DROP
+      500 PUSHINT
+      50 PUSHINT
+    }>
+    DUP
+    6 EQINT
+    IFJMP:<{
+      DROP
+      400 PUSHINT
+      40 PUSHINT
+    }>
+    DUP
+    7 EQINT
+    IFJMP:<{
+      DROP
+      300 PUSHINT
+      30 PUSHINT
+    }>
+    DUP
+    8 EQINT
+    IFJMP:<{
+      DROP
+      200 PUSHINT
+      20 PUSHINT
+    }>
+    DUP
+    9 EQINT
+    IFJMP:<{
+      DROP
+      100 PUSHINT
+      10 PUSHINT
+    }>
+    10 EQINT
+    IFJMP:<{
+      50 PUSHINT
+      5 PUSHINT
+    }>
+    10 PUSHINT
+    1 PUSHINT
+  }>
+  get_min_price PROC:<{
+    SWAP
+    3 RSHIFT#
+    get_min_price_config CALLDICT
+    SWAP
+    1000000000 PUSHINT
+    MUL
+    SWAP
+    1000000000 PUSHINT
+    MUL
+    s0 s2 XCHG
+    1659171600 PUSHINT
+    SUB
+    2592000 PUSHINT
+    DIV
+    DUP
+    21 GTINT
+    IFJMP:<{
+      2DROP
+    }>
+    1 2 BLKDROP2
+    REPEAT:<{
+      90 MULCONST
+      100 PUSHINT
+      DIV
+    }>
+  }>
+  load_data PROCINLINE:<{
+    c4 PUSH
+    CTOS
+    LDREF
+    LDREF
+    DROP
+  }>
+  save_data PROCINLINE:<{
+    SWAP
+    NEWC
+    STREF
+    STREF
+    ENDC
+    c4 POP
+  }>
+  calculate_nft_item_state_init PROC:<{
+    SWAP
+    NEWC
+    256 STU
+    MYADDR
+    STSLICER
+    ENDC
+    0 PUSHINT
+    DUP
+    NEWC
+    2 STU
+    s1 s3 XCHG
+    STDICT
+    STDICT
+    1 STU
+    ENDC
+  }>
+  calculate_nft_item_address PROC:<{
+    HASHCU
+    4 PUSHINT
+    NEWC
+    3 STU
+    s1 s2 XCHG
+    8 STI
+    256 STU
+    ENDC
+    CTOS
+  }>
+  deploy_nft_item PROC:<{
+    -ROT
+    calculate_nft_item_state_init CALLDICT
+    0 PUSHINT
+    OVER
+    calculate_nft_item_address CALLDICT
+    7 PUSHINT
+    24 PUSHINT
+    NEWC
+    6 STU
+    ROT
+    STSLICER
+    0 PUSHINT
+    STVARUINT16
+    108 STU
+    STREF
+    STREF
+    ENDC
+    64 PUSHINT
+    SENDRAWMSG
+  }>
+  recv_internal PROC:<{
+    DUP
+    SEMPTY
+    IF:<{
+      16 PUSHPOW2DEC
+      THROWANY
+    }>
+    SWAP
+    CTOS
+    4 LDU
+    SWAP
+    1 PUSHINT
+    AND
+    IFJMP:<{
+      3 BLKDROP
+    }>
+    LDMSGADDR
+    DROP
+    SWAP
+    32 LDU
+    load_data INLINECALLDICT
+    NIP
+    s2 PUSH
+    0 EQINT
+    IFJMP:<{
+      s2 POP
+      NOW
+      DUP
+      1659171600 PUSHINT
+      GREATER
+      199 THROWIFNOT
+      SWAP
+      read_domain_from_comment CALLDICT
+      DUP
+      SBITS
+      DUP
+      24 GTINT
+      200 THROWIFNOT
+      DUP
+      1008 PUSHINT
+      LEQ
+      201 THROWIFNOT
+      DUP
+      8 PUSHINT
+      MOD
+      0 EQINT
+      202 THROWIFNOT
+      OVER
+      check_domain_string CALLDICT
+      203 THROWIFNOT
+      ROT
+      get_min_price CALLDICT
+      s1 s4 XCHG
+      GEQ
+      204 THROWIFNOT
+      s2 PUSH
+      HASHSU
+      80 PUSHINT
+      CONFIGOPTPARAM
+      DUP
+      ISNULL
+      NOT
+      IF:<{
+        CTOS
+        LDDICT
+        DROP
+        s1 s(-1) PUXC
+        8 PUSHPOW2
+        DICTUGET
+        NULLSWAPIFNOT
+        NIP
+        205 THROWIF
+      }>ELSE<{
+        DROP
+      }>
+      NEWC
+      s0 s4 XCHG2
+      STSLICER
+      ENDC
+      NEWC
+      s0 s3 XCHG2
+      STSLICER
+      s1 s2 XCHG
+      STREF
+      ENDC
+      deploy_nft_item CALLDICT
+    }>
+    s2 s4 XCHG
+    4 BLKDROP
+    923790417 PUSHINT
+    EQUAL
+    IFJMP:<{
+    }>
+    16 PUSHPOW2DEC
+    THROWANY
+  }>
+  get_collection_data PROC:<{
+    load_data INLINECALLDICT
+    DROP
+    -1 PUSHINT
+    zero_address CALLDICT
+    s1 s2 XCHG
+  }>
+  get_nft_address_by_index PROC:<{
+    load_data INLINECALLDICT
+    NIP
+    calculate_nft_item_state_init CALLDICT
+    0 PUSHINT
+    SWAP
+    calculate_nft_item_address CALLDICT
+  }>
+  get_nft_content PROC:<{
+    NIP
+  }>
+  dnsresolve PROC:<{
+    DROP
+    DUP
+    SBITS
+    8 PUSHINT
+    MOD
+    0 EQINT
+    70 THROWIFNOT
+    DUP
+    8 PLDI
+    0 EQINT
+    OVER
+    SBITS
+    8 EQINT
+    s1 s(-1) PUXC
+    AND
+    IFJMP:<{
+      2DROP
+      8 PUSHINT
+      PUSHNULL
+    }>
+    DUP
+    IF:<{
+      SWAP
+      8 LDU
+      NIP
+      SWAP
+    }>
+    OVER
+    get_top_domain_bits CALLDICT
+    s2 s2 XCPU
+    LDSLICEX
+    DROP
+    HASHSU
+    47763 PUSHINT
+    NEWC
+    16 STU
+    SWAP
+    get_nft_address_by_index CALLDICT
+    STSLICER
+    ENDC
+    SWAP
+    IF:<{
+      8 PUSHINT
+    }>ELSE<{
+      0 PUSHINT
+    }>
+    s1 s2 XCHG
+    ADD
+    SWAP
+  }>
+}END>c
