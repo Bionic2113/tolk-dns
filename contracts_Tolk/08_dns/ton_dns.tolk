@@ -1,6 +1,4 @@
-import "../dns-utils"
-
-
+import "dns-utils"
 
 struct DomainStorage {
     ton: address

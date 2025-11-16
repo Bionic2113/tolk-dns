@@ -1,6 +1,4 @@
-import "02_nft/storage"
-
-
+import "storage"
 
 struct (0x370fec51) JustFillUp {
     queryID: uint64

@@ -825,29 +825,22 @@ describe(numericFolder, () => {
             const nftOwner = await blockchain.treasury('nft-owner');
             const someUser = await blockchain.treasury('some-user');
 
-            const nftItem = blockchain.openContract(
-                NFTItem.createFromConfig(
-                    {
-                        itemIndex: aliceIndex,
-                        collectionAddress: nftCollection.address,
-                        domain: 'alice',
-                        auction: beginCell()
-                            .storeAddress(nftOwner.address)
-                            .storeCoins(toNano('1000'))
-                            .storeUint(blockchain.now! + 604800, 64)
-                            .endCell(),
-                        lastFillUpTime: BigInt(blockchain.now!),
-                    },
-                    nftItemCode,
-                ),
+            const nftItem = await nftFixture(
+                nftOwner.getSender(),
+                beginCell().storeUint(NFTCollection.OPCODES.DEPLOY_NFT, 32).storeStringTail('alice').endCell(),
             );
 
-            await nftItem.sendDeploy(nftOwner.getSender(), {
-                value: toNano('1000'),
-            });
+            let contract = await blockchain.getContract(nftItem.address);
+
+            expect(contract.accountState?.type).toBe('active');
+
+            let initState: Cell = beginCell().endCell();
+
+            if (contract.accountState?.type == 'active') {
+                initState = contract.accountState.state.data!;
+            }
 
             blockchain.now! += 1;
-
             const result = await nftCollection.sendDeployNft(someUser.getSender(), {
                 value: toNano('1000'),
                 body: beginCell().storeUint(NFTCollection.OPCODES.DEPLOY_NFT, 32).storeStringTail('alice').endCell(),
@@ -857,29 +850,17 @@ describe(numericFolder, () => {
                 from: nftItem.address,
                 to: someUser.address,
                 mode: SendMode.CARRY_ALL_REMAINING_INCOMING_VALUE,
-                body: beginCell().storeUint(0, 32).storeUint(13000000, 64).endCell(),
+                // 12000000 - B71B00
+                // 13000000 - C65D40
+                body: beginCell().storeUint(0, 32).storeUint(12000000, 64).endCell(),
             });
 
-            const contract = await blockchain.getContract(nftItem.address);
+            contract = await blockchain.getContract(nftItem.address);
 
             expect(contract.accountState?.type).toBe('active');
 
-            blockchain.now! -= 1;
-
             if (contract.accountState?.type == 'active') {
-                expect(contract.accountState.state.data).toEqualCell(
-                    NFTItem.configToCell({
-                        itemIndex: aliceIndex,
-                        collectionAddress: nftCollection.address,
-                        domain: 'alice',
-                        auction: beginCell()
-                            .storeAddress(nftOwner.address)
-                            .storeCoins(toNano('1000'))
-                            .storeUint(blockchain.now! + 604800, 64)
-                            .endCell(),
-                        lastFillUpTime: BigInt(blockchain.now!),
-                    }),
-                );
+                expect(contract.accountState.state.data).toEqualCell(initState);
             }
         });
     });
