@@ -14,9 +14,6 @@ import {
     StateInit,
 } from '@ton/core';
 
-// const OWNER_ADDRESS = '448bcf827469c5fc38541c77fdd91d4e347eac200f6f2d9fd62dc08885f0415f';
-// const TON = 1e9;
-
 export const CONTENT = () => {
     const dict = Dictionary.empty(Dictionary.Keys.BigUint(256), Dictionary.Values.Cell());
     dict.set(
@@ -112,69 +109,6 @@ export class NFTItem implements Contract {
         const init = { code, data };
         return new NFTItem(contractAddress(workchain, init), init);
     }
-
-    /*
-    const makeStorageItem = ({auctionEndTime, lastFillUpTime}) => {
-        return [
-            "uint256", '38930916800118655128984401856443062677799436388671332167772672007419684920584', // index
-            "Address", '0:' + COLLECTION_ADDRESS, // collection_address
-            "uint2", '0', // owner_address - zero address
-            'cell', CONTENT_EMPTY,
-            'cell', [ // domain
-                'string', 'alice',
-            ],
-            'uint1', 1, // auction maybe
-            'cell', [ // auction
-                'Address', '0:' + OWNER_ADDRESS, // max_bid_address
-                'coins', 1000 * TON, // max_bid_amount
-                'uint64', auctionEndTime || (AUCTION_START_TIME + AUCTION_START_DURATION) // auction_end_time
-            ],
-            'uint64', lastFillUpTime || AUCTION_START_TIME // last_fill_up_time
-        ];
-    }
-
-
-    const builder = beginCell()
-        .storeUint(config.itemIndex, 256)
-        .storeAddress(config.collectionAddress)
-        .storeUint(0, 2) //  owner_address - zero address
-        .storeRef(beginCell().endCell()) // content
-        .storeRef(beginCell().storeStringTail('alice').endCell()) // domain
-        .storeUint(1, 1) // auction maybe
-        .storeRef(
-            // auction
-            beginCell()
-                .storeAddress(address('0:' + OWNER_ADDRESS))
-                .storeCoins(1000 * TON)
-                .storeUint(1659171600 + 604800, 64) // end auction
-                .endCell(),
-        )
-        .storeUint(1659171600, 64); // start auction
-
-
-        ------------------------------------------------
-        const makeStorageItemNonInit = () => {
-            return [
-                "uint256", '38930916800118655128984401856443062677799436388671332167772672007419684920584', // index,
-                "Address", '0:' + COLLECTION_ADDRESS, // collection_address
-            ];
-        }
-
-        ------------------------------------------------
-        const makeStorageItemComplete = ({auctionEndTime, lastFillUpTime}) => {
-            return [
-                "uint256", '38930916800118655128984401856443062677799436388671332167772672007419684920584', // index,
-                "Address", '0:' + COLLECTION_ADDRESS, // collection_address
-                "Address", '0:' + OWNER_ADDRESS, // owner_address
-                'cell', CONTENT_EMPTY,
-                'cell', [ // domain
-                    'string', 'alice',
-                ],
-                'uint1', 0, // auction maybe
-                'uint64', lastFillUpTime || AUCTION_START_TIME // last_fill_up_time
-            ];
-        }
-    */
 
     static configToCell(config: NFTItemConfig): Cell {
         const builder = beginCell().storeUint(config.itemIndex, 256).storeAddress(config.collectionAddress);

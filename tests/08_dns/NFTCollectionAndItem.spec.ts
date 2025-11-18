@@ -1,5 +1,17 @@
 import { Blockchain, SandboxContract, TreasuryContract, Treasury, loadConfig, updateConfig } from '@ton/sandbox';
-import { Address, beginCell, Cell, comment, SendMode, toNano, Dictionary, Slice, DictionaryValue } from '@ton/core';
+import {
+    Address,
+    beginCell,
+    Cell,
+    comment,
+    SendMode,
+    toNano,
+    Dictionary,
+    Slice,
+    DictionaryValue,
+    contractAddress,
+    StateInit,
+} from '@ton/core';
 import { NFTCollection, aliceIndex } from '../../wrappers/08_dns/NFTCollection';
 import { NFTItem, CONTENT, EDITED_CONTENT, CONTENT_WITH_WALLET } from '../../wrappers/08_dns/NFTItem';
 import '@ton/test-utils';
@@ -9,6 +21,7 @@ import { GasLogAndSave } from '../gas-logger';
 import { userInfo } from 'node:os';
 
 const numericFolder = '08_dns';
+const MONTH = 2592000;
 
 describe(numericFolder, () => {
     let GAS_LOG = new GasLogAndSave(numericFolder);
@@ -81,7 +94,11 @@ describe(numericFolder, () => {
                 ),
             );
 
-            const deployResult = await nftCollection.sendDeploy(owner.getSender(), toNano('1000'));
+            const deployResult = await nftCollection.sendDeploy(owner.getSender(), {
+                value: toNano('1000'),
+                queryId: 0,
+                name: 'gram',
+            });
 
             expect(deployResult.transactions).toHaveTransaction({
                 from: owner.address,
@@ -862,6 +879,360 @@ describe(numericFolder, () => {
             if (contract.accountState?.type == 'active') {
                 expect(contract.accountState.state.data).toEqualCell(initState);
             }
+        });
+    });
+
+    describe('NFTCollection', () => {
+        let initState: Cell;
+
+        beforeEach(async () => {
+            blockchain = await Blockchain.create();
+            activateTVM11(blockchain);
+            blockchain.now = 1659171600 - 1;
+
+            initState = NFTCollection.configToCell({
+                nftItemCode: nftItemCode,
+                content: beginCell().storeUint(1, 8).storeStringTail('https://ton.org/collection.json').endCell(),
+            });
+
+            owner = await blockchain.treasury('owner');
+            const init: StateInit = { code: nftCollectionCode, data: initState };
+
+            nftCollection = blockchain.openContract(new NFTCollection(contractAddress(0, init), init));
+            // NFTCollection.createFromConfig(initState, nftCollectionCode));
+
+            // const deployResult = await nftCollection.sendDeploy(owner.getSender(), toNano('1000'));
+
+            // expect(deployResult.transactions).toHaveTransaction({
+            //     from: owner.address,
+            //     to: nftCollection.address,
+            //     deploy: true,
+            //     success: true,
+            // });
+        });
+
+        it('auction not begin yet', async () => {
+            const deployResult = await nftCollection.sendDeploy(owner.getSender(), {
+                value: toNano('1000'),
+                queryId: 0,
+                name: 'alice',
+            });
+
+            expect(deployResult.transactions).toHaveTransaction({
+                from: owner.address,
+                to: nftCollection.address,
+                exitCode: 199,
+            });
+
+            const contract = await blockchain.getContract(nftCollection.address);
+
+            expect(contract.accountState?.type).toBe('active');
+
+            if (contract.accountState?.type == 'active') {
+                expect(contract.accountState.state.data).toEqualCell(initState!);
+            }
+        });
+
+        it('mod(len, 8) == 0', async () => {
+            blockchain.now = 1659171600 + 1;
+
+            const deployResult = await nftCollection.sendDeploy(owner.getSender(), {
+                value: toNano('1000'),
+                queryId: 0,
+                name: 'alice',
+                uint: 1,
+            });
+
+            expect(deployResult.transactions).toHaveTransaction({
+                from: owner.address,
+                to: nftCollection.address,
+                exitCode: 202,
+            });
+
+            const contract = await blockchain.getContract(nftCollection.address);
+
+            expect(contract.accountState?.type).toBe('active');
+
+            if (contract.accountState?.type == 'active') {
+                expect(contract.accountState.state.data).toEqualCell(initState!);
+            }
+        });
+
+        it('invalid chars - \0 char', async () => {
+            blockchain.now = 1659171600 + 1;
+
+            const deployResult = await nftCollection.sendDeploy(owner.getSender(), {
+                value: toNano('1000'),
+                name: 'al\0ice',
+            });
+
+            expect(deployResult.transactions).toHaveTransaction({
+                from: owner.address,
+                to: nftCollection.address,
+                exitCode: 203,
+            });
+
+            const contract = await blockchain.getContract(nftCollection.address);
+
+            expect(contract.accountState?.type).toBe('active');
+
+            if (contract.accountState?.type == 'active') {
+                expect(contract.accountState.state.data).toEqualCell(initState!);
+            }
+        });
+
+        it.each([
+            // < 4 chars
+            ['', 200],
+            ['a', 200],
+            ['yo', 200],
+            ['bob', 200],
+            // 4 chars
+            ['appl', 0],
+            // 123 chars
+            [
+                'alicealicealicealicealicealicealicealicealicealialicealicealicealicealicsealicelialiclicealealicealiceicealicealicealiceali',
+                0,
+            ],
+            // invalid chars - hyphen at end
+            ['-alice', 203],
+            // invalid chars - uppercase
+            ['aLice', 203],
+            // valid chars
+            ['abcdefghijklmnopqrstuvwxyz', 0],
+        ])('makeChars', async (text, exitCode) => {
+            blockchain.now = 1659171600 + 1;
+
+            const deployResult = await nftCollection.sendDeploy(owner.getSender(), {
+                value: toNano('1000'),
+                queryId: 0,
+                name: text,
+            });
+
+            expect(deployResult.transactions).toHaveTransaction({
+                from: owner.address,
+                to: nftCollection.address,
+                exitCode: exitCode,
+            });
+
+            const contract = await blockchain.getContract(nftCollection.address);
+
+            expect(contract.accountState?.type).toBe('active');
+
+            if (contract.accountState?.type == 'active') {
+                expect(contract.accountState.state.data).toEqualCell(initState!);
+            }
+        });
+
+        it.each([
+            // 127 chars
+            [
+                'alicealicealicealicealicealicealicealicealiceali',
+                'cealicealicealicealicealicealicealicealicealicealicealicealicealicealicealiceal',
+                201,
+            ],
+            // 126 chars
+            [
+                'alicealicealicealicealicealicealicealicealiceali',
+                'cealicealicealicealicealicealicealicealicealicealicealicealicealicealicealicea',
+                0,
+            ],
+            [
+                'alicealicealicealicealicealicealicealicealicealialicealicealicealicealicsealicelialiclicealealicealiceicealicealicealiceali',
+                'a',
+                0,
+            ],
+            // invalid chars
+            [
+                'alicealicealicealicealicealicealicealicealiceali',
+                'cealicealicealicealicealicea$liceaealicealicealicealicealicealicealicealiceal',
+                203,
+            ],
+            // invalid chars - hyphen at begin
+            [
+                'alicealicealicealicealicealicealicealicealiceali',
+                'cealicealicealicealicealicealiceaealicealicealicealicealicealicealicealiceal-',
+                203,
+            ],
+        ])('makeChars2', async (text1, text2, exitCode) => {
+            blockchain.now = 1659171600 + 1;
+
+            const deployResult = await nftCollection.sendDeploy(owner.getSender(), {
+                value: toNano('1000'),
+                queryId: 0,
+                name: text1,
+                name_2: text2,
+            });
+
+            expect(deployResult.transactions).toHaveTransaction({
+                from: owner.address,
+                to: nftCollection.address,
+                exitCode: exitCode,
+            });
+
+            const contract = await blockchain.getContract(nftCollection.address);
+
+            expect(contract.accountState?.type).toBe('active');
+
+            if (contract.accountState?.type == 'active') {
+                expect(contract.accountState.state.data).toEqualCell(initState!);
+            }
+        });
+
+        it.each([
+            [4, 0, 1000],
+            [4, 1 * MONTH, Math.ceil(1000 * Math.pow(0.9, 1))],
+            [4, 12 * MONTH, Math.ceil(1000 * Math.pow(0.9, 12))],
+            [4, 24 * MONTH, 100],
+            [5, 0, 500],
+            [5, 6 * MONTH, Math.ceil(500 * Math.pow(0.9, 6))],
+            [5, 24 * MONTH, 50],
+            [6, 0, 400],
+            [6, 24 * MONTH, 40],
+            [7, 0, 300],
+            [7, 24 * MONTH, 30],
+            [8, 0, 200],
+            [8, 24 * MONTH, 20],
+            [9, 0, 100],
+            [9, 24 * MONTH, 10],
+            [10, 0, 50],
+            [10, 24 * MONTH, 5],
+            [11, 0, 10],
+            [11, 24 * MONTH, 1.1],
+            [12, 0, 10],
+            [12, 24 * MONTH, 1.1],
+        ])('makePrice', async (symbolsCount, addTime, price) => {
+            blockchain.now = 1659171600 + 1 + addTime;
+
+            let s = '';
+            for (let i = 0; i < symbolsCount; i++) {
+                s += 'a';
+            }
+
+            let deployResult = await nftCollection.sendDeploy(owner.getSender(), {
+                value: toNano(price),
+                queryId: 0,
+                name: s,
+            });
+
+            expect(deployResult.transactions).toHaveTransaction({
+                from: owner.address,
+                to: nftCollection.address,
+                exitCode: 0,
+            });
+
+            let contract = await blockchain.getContract(nftCollection.address);
+
+            expect(contract.accountState?.type).toBe('active');
+
+            if (contract.accountState?.type == 'active') {
+                expect(contract.accountState.state.data).toEqualCell(initState!);
+            }
+
+            deployResult = await nftCollection.sendDeploy(owner.getSender(), {
+                value: toNano(price - 1),
+                queryId: 0,
+                name: s,
+            });
+
+            expect(deployResult.transactions).toHaveTransaction({
+                from: owner.address,
+                to: nftCollection.address,
+                exitCode: 204,
+            });
+
+            contract = await blockchain.getContract(nftCollection.address);
+
+            expect(contract.accountState?.type).toBe('active');
+
+            if (contract.accountState?.type == 'active') {
+                expect(contract.accountState.state.data).toEqualCell(initState!);
+            }
+        });
+
+        it('colection get', async () => {
+            blockchain.now = 1659171600;
+
+            let deployResult = await nftCollection.sendDeploy(owner.getSender(), {
+                value: toNano(10),
+            });
+
+            expect(deployResult.transactions).toHaveTransaction({
+                from: owner.address,
+                to: nftCollection.address,
+                exitCode: 0xffff,
+            });
+
+            let contract = await blockchain.getContract(nftCollection.address);
+
+            expect(contract.accountState?.type).toBe('active');
+
+            if (contract.accountState?.type == 'active') {
+                expect(contract.accountState.state.data).toEqualCell(initState!);
+            }
+
+            deployResult = await nftCollection.sendDeploy(owner.getSender(), {
+                value: toNano(10),
+                queryId: 1,
+            });
+
+            expect(deployResult.transactions).toHaveTransaction({
+                from: owner.address,
+                to: nftCollection.address,
+                exitCode: 0xffff,
+            });
+
+            contract = await blockchain.getContract(nftCollection.address);
+
+            expect(contract.accountState?.type).toBe('active');
+
+            if (contract.accountState?.type == 'active') {
+                expect(contract.accountState.state.data).toEqualCell(initState!);
+            }
+
+            deployResult = await nftCollection.sendDeploy(owner.getSender(), {
+                value: toNano(10),
+                queryId: 0x370fec51,
+            });
+
+            expect(deployResult.transactions).toHaveTransaction({
+                from: owner.address,
+                to: nftCollection.address,
+                exitCode: 0,
+            });
+
+            contract = await blockchain.getContract(nftCollection.address);
+
+            expect(contract.accountState?.type).toBe('active');
+
+            if (contract.accountState?.type == 'active') {
+                expect(contract.accountState.state.data).toEqualCell(initState!);
+            }
+
+            const contentData = await nftCollection.getCollectionData();
+            expect(contentData.nextItemIndex).toEqual(-1);
+            expect(contentData.collectionContent).toEqualCell(
+                beginCell().storeUint(1, 8).storeStringTail('https://ton.org/collection.json').endCell(),
+            );
+            expect(contentData.ownerAddress).toBeNull();
+
+            let dns = await nftCollection.getResolveDNS(
+                beginCell().storeStringTail('\0').endCell().beginParse(),
+                BigInt(0),
+            );
+            expect(dns.index).toEqual(8);
+            expect(dns.domain).toBeNull();
+
+            dns = await nftCollection.getResolveDNS(
+                beginCell().storeStringTail('alice\0').endCell().beginParse(),
+                BigInt(0),
+            );
+            expect(dns.index).toEqual(5 * 8);
+            // TODO: тут встал. Надо либо хэш научиться сверять,
+            // либо ячейку построить
+            expect(dns.domain?.hash.toString()).toEqual(
+                '63510023014831555397400702175474279292479092682101742919664604181945239950513',
+            );
         });
     });
 });

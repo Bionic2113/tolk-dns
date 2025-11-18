@@ -63,10 +63,38 @@ export class NFTCollection implements Contract {
         readonly init?: StateInit,
     ) {}
 
-    async sendDeploy(provider: ContractProvider, via: Sender, value: bigint) {
+    async sendDeploy(
+        provider: ContractProvider,
+        via: Sender,
+        opts: {
+            value: bigint;
+            queryId?: number;
+            name?: string;
+            name_2?: string;
+            uint?: number;
+        },
+    ) {
+        const body = beginCell();
+
+        if (opts.queryId) {
+            body.storeUint(opts.queryId, 32);
+        }
+
+        if (opts.name) {
+            body.storeStringTail(opts.name);
+        }
+
+        if (opts.name_2) {
+            body.storeRef(beginCell().storeStringTail(opts.name_2).endCell());
+        }
+
+        if (opts.uint) {
+            body.storeUint(opts.uint, 1);
+        }
+
         await provider.internal(via, {
-            value: value,
-            body: beginCell().storeUint(0, 32).storeStringTail('gram').endCell(),
+            value: opts.value,
+            body: body.endCell(),
         });
     }
 
@@ -135,51 +163,16 @@ export class NFTCollection implements Contract {
         });
     }
 
-    async sendGetRoyaltyParams(
-        provider: ContractProvider,
-        via: Sender,
-        opts: {
-            queryId?: number;
-            value: bigint;
-        },
-    ) {
-        await provider.internal(via, {
-            value: opts.value,
-            sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell()
-                .storeUint(NFTCollection.OPCODES.GET_ROYALTY_PARAMS, 32)
-                .storeUint(opts.queryId ?? 0, 64)
-                .endCell(),
-        });
-    }
-
-    async sendChangeOwner(
-        provider: ContractProvider,
-        via: Sender,
-        opts: {
-            queryId?: number;
-            value: bigint;
-            newOwner: Address;
-        },
-    ) {
-        await provider.internal(via, {
-            value: opts.value,
-            sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell()
-                .storeUint(NFTCollection.OPCODES.CHANGE_OWNER, 32)
-                .storeUint(opts.queryId ?? 0, 64)
-                .storeAddress(opts.newOwner)
-                .endCell(),
-        });
-    }
-
-    async getRoyaltyParams(provider: ContractProvider): Promise<RoyaltyParams> {
-        const { stack } = await provider.get('royalty_params', []);
-
+    async getCollectionData(provider: ContractProvider): Promise<{
+        nextItemIndex: number;
+        collectionContent: Cell;
+        ownerAddress: Address | null;
+    }> {
+        const { stack } = await provider.get('get_collection_data', []);
         return {
-            numerator: stack.readNumber(),
-            denominator: stack.readNumber(),
-            royaltyAddress: stack.readAddress(),
+            nextItemIndex: stack.readNumber(),
+            collectionContent: stack.readCell(),
+            ownerAddress: stack.readAddressOpt(),
         };
     }
 
@@ -192,16 +185,41 @@ export class NFTCollection implements Contract {
         return stack.readAddress();
     }
 
-    async getCollectionData(provider: ContractProvider): Promise<{
-        nextItemIndex: number;
-        collectionContent: Cell;
-        ownerAddress: Address | null;
+    async getNftContent(
+        provider: ContractProvider,
+        index: number,
+        individualContent: Cell,
+    ): Promise<{
+        individualContent: Cell | null;
     }> {
-        const { stack } = await provider.get('get_collection_data', []);
+        const builder = new TupleBuilder();
+        builder.writeNumber(index);
+        builder.writeCell(individualContent);
+
+        const { stack } = await provider.get('get_nft_data', builder.build());
+
         return {
-            nextItemIndex: stack.readNumber(),
-            collectionContent: stack.readCell(),
-            ownerAddress: stack.readAddressOpt(),
+            individualContent: stack.readCellOpt(),
+        };
+    }
+
+    async getResolveDNS(
+        provider: ContractProvider,
+        subdomain: Slice,
+        category: bigint,
+    ): Promise<{
+        index: number;
+        domain: Cell | null;
+    }> {
+        const builder = new TupleBuilder();
+        builder.writeSlice(subdomain);
+        builder.writeNumber(category);
+
+        const { stack } = await provider.get('dnsresolve', builder.build());
+
+        return {
+            index: stack.readNumber(),
+            domain: stack.readCellOpt(),
         };
     }
 }
