@@ -899,16 +899,6 @@ describe(numericFolder, () => {
             const init: StateInit = { code: nftCollectionCode, data: initState };
 
             nftCollection = blockchain.openContract(new NFTCollection(contractAddress(0, init), init));
-            // NFTCollection.createFromConfig(initState, nftCollectionCode));
-
-            // const deployResult = await nftCollection.sendDeploy(owner.getSender(), toNano('1000'));
-
-            // expect(deployResult.transactions).toHaveTransaction({
-            //     from: owner.address,
-            //     to: nftCollection.address,
-            //     deploy: true,
-            //     success: true,
-            // });
         });
 
         it('auction not begin yet', async () => {
@@ -962,6 +952,7 @@ describe(numericFolder, () => {
             blockchain.now = 1659171600 + 1;
 
             const deployResult = await nftCollection.sendDeploy(owner.getSender(), {
+                queryId: 0,
                 value: toNano('1000'),
                 name: 'al\0ice',
             });
@@ -1228,11 +1219,86 @@ describe(numericFolder, () => {
                 BigInt(0),
             );
             expect(dns.index).toEqual(5 * 8);
-            // TODO: тут встал. Надо либо хэш научиться сверять,
-            // либо ячейку построить
-            expect(dns.domain?.hash.toString()).toEqual(
-                '63510023014831555397400702175474279292479092682101742919664604181945239950513',
+
+            blockchain.now += 1;
+
+            const nftItem = await nftFixture(
+                owner.getSender(),
+                beginCell().storeUint(NFTCollection.OPCODES.DEPLOY_NFT, 32).storeStringTail('alice').endCell(),
             );
+
+            expect(dns.domain).toEqualCell(beginCell().storeUint(0xba93, 16).storeAddress(nftItem.address).endCell());
+
+            dns = await nftCollection.getResolveDNS(
+                beginCell().storeStringTail('alice\0sub\0').endCell().beginParse(),
+                BigInt(0),
+            );
+            expect(dns.index).toEqual(5 * 8);
+            expect(dns.domain).toEqualCell(beginCell().storeUint(0xba93, 16).storeAddress(nftItem.address).endCell());
+
+            dns = await nftCollection.getResolveDNS(
+                beginCell().storeStringTail('\0alice\0').endCell().beginParse(),
+                BigInt(0),
+            );
+            expect(dns.index).toEqual(6 * 8);
+            expect(dns.domain).toEqualCell(beginCell().storeUint(0xba93, 16).storeAddress(nftItem.address).endCell());
+        });
+
+        it('collection config', async () => {
+            const configDict = Dictionary.loadDirect(
+                Dictionary.Keys.Int(32),
+                Dictionary.Values.Cell(),
+                blockchain.config,
+            );
+
+            const dict = Dictionary.empty(Dictionary.Keys.BigUint(256), Dictionary.Values.Uint(8));
+            dict.set(aliceIndex, 1);
+
+            configDict.set(80, beginCell().storeDict(dict).endCell());
+
+            blockchain.setConfig(beginCell().storeDictDirect(configDict).endCell());
+
+            blockchain.now = 1659171600 + 1;
+
+            let deployResult = await nftCollection.sendDeploy(owner.getSender(), {
+                value: toNano('1000'),
+                queryId: 0,
+                name: 'alice',
+            });
+
+            expect(deployResult.transactions).toHaveTransaction({
+                from: owner.address,
+                to: nftCollection.address,
+                exitCode: 205,
+            });
+
+            let contract = await blockchain.getContract(nftCollection.address);
+
+            expect(contract.accountState?.type).toBe('active');
+
+            if (contract.accountState?.type == 'active') {
+                expect(contract.accountState.state.data).toEqualCell(initState!);
+            }
+
+            deployResult = await nftCollection.sendDeploy(owner.getSender(), {
+                value: toNano('1000'),
+                queryId: 0,
+                name: 'alice2',
+            });
+
+            expect(deployResult.transactions).toHaveTransaction({
+                from: owner.address,
+                to: nftCollection.address,
+                exitCode: 0,
+            });
+
+            contract = await blockchain.getContract(nftCollection.address);
+
+            expect(contract.accountState?.type).toBe('active');
+
+            if (contract.accountState?.type == 'active') {
+                expect(contract.accountState.state.data).toEqualCell(initState!);
+            }
         });
     });
 });

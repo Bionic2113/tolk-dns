@@ -76,7 +76,7 @@ export class NFTCollection implements Contract {
     ) {
         const body = beginCell();
 
-        if (opts.queryId) {
+        if (opts.queryId !== undefined) {
             body.storeUint(opts.queryId, 32);
         }
 
@@ -110,56 +110,6 @@ export class NFTCollection implements Contract {
             value: opts.value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: opts.body,
-        });
-    }
-
-    async sendBatchDeployNFT(
-        provider: ContractProvider,
-        via: Sender,
-        opts: {
-            value: bigint;
-            queryId?: number;
-            items: {
-                to: Address;
-                index: number;
-                itemValue?: bigint;
-                content?: Cell;
-            }[];
-        },
-    ) {
-        const sliceValue: DictionaryValue<Slice> = {
-            serialize(src, builder) {
-                return builder.storeSlice(src);
-            },
-            parse(src: Slice): Slice {
-                return src;
-            },
-        };
-
-        const deployList = Dictionary.empty(Dictionary.Keys.Uint(64), sliceValue);
-        for (const item of opts.items) {
-            deployList.set(
-                item.index,
-                beginCell()
-                    .storeCoins(10000000n)
-                    .storeRef(
-                        beginCell()
-                            .storeAddress(item.to)
-                            .storeRef(item.content ?? Cell.EMPTY),
-                    )
-                    .endCell()
-                    .beginParse(),
-            );
-        }
-
-        await provider.internal(via, {
-            value: opts.value,
-            sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell()
-                .storeUint(NFTCollection.OPCODES.BATCH_DEPLOY_NFT, 32)
-                .storeUint(opts.queryId ?? 0, 64)
-                .storeDict(deployList)
-                .endCell(),
         });
     }
 
