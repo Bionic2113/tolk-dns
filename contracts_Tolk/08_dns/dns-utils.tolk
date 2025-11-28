@@ -19,33 +19,67 @@ fun mod(x: int, y: int): int
 fun nullCell(): cell
     asm "PUSHNULL"
 
+fun readDomainFromComment(inMsgBody: slice): slice {
+    var needBreak: bool = false;
+    var result: builder = beginCell();
+    do {
+        result = result.storeSlice(inMsgBody.loadBits(inMsgBody.remainingBitsCount()));
+        var refsLen: int = inMsgBody.remainingRefsCount();
+        needBreak = refsLen == 0;
+        if (!needBreak) {
+            assert (refsLen == 1) throw 202;
+            inMsgBody = inMsgBody.loadRef().beginParse();
+        }
+    } while (!needBreak);
+    return result.endCell().beginParse();
+}
+
 fun checkDomainString(domain: slice): bool {
     var i: int = 0;
-    val len: int = domain.remainingBitsCount();
+    var len: int = domain.remainingBitsCount();
     var needBreak: bool = false;
-
     do {
         needBreak = i == len;
         if (!needBreak) {
-            val char = domain.loadUint(8);
+            var char: int = domain.loadUint(8);
             // we can do it because additional UTF-8 character's octets >= 128 -- https://www.ietf.org/rfc/rfc3629.txt
-            var is_hypen = (char == 45);
-            var validChar = (is_hypen & (i > 0) & (i < len - 8)) | ((char >= 48) & (char <= 57)) |
-            ((char >= 97) & (char <= 122));
+            var isHyphen: bool = (char == 45);
+            var validChar: bool = (isHyphen & (i > 0) & (i < len - 8)) |
+            ((char >= 48) & (char <= 57)) |
+            ((char >= 97) & (char <= 122)); // '-' or 0-9 or a-z
 
-            // (char == 45 && (i > 0) && (i < len - 8)) ||
-            // ((char >= 48) && (char <= 57)) ||
-            // ((char >= 97) && (char <= 122)); // '-' or 0-9 or a-z
             needBreak = !validChar;
             if (!needBreak) {
                 i += 8;
             }
         }
     } while (!needBreak);
-
     return i == len;
 }
 
+// fun checkDomainString(domain: slice): bool {
+//     var i: int = 0;
+//     val len: int = domain.remainingBitsCount();
+//     var needBreak: bool = false;
+//     do {
+//         needBreak = i == len;
+//         if (!needBreak) {
+//             val char = domain.loadUint(8);
+//             // we can do it because additional UTF-8 character's octets >= 128 -- https://www.ietf.org/rfc/rfc3629.txt
+//             var is_hypen = (char == 45);
+//             var validChar = (is_hypen && (i > 0) && (i < len - 8)) || ((char >= 48) && (char <= 57)) ||
+//             ((char >= 97) && (char <= 122));
+//             // (char == 45 && (i > 0) && (i < len - 8)) ||
+//             // ((char >= 48) && (char <= 57)) ||
+//             // ((char >= 97) && (char <= 122)); // '-' or 0-9 or a-z
+//             needBreak = !validChar;
+//             if (!needBreak) {
+//                 i += 8;
+//             }
+//         }
+//     } while (!needBreak);
+//     return i == len;
+// }
 fun topDomainBits(domain: slice): int {
     var i: int = 0;
     var needBreak: bool = false;

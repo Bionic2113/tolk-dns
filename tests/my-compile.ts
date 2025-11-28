@@ -3,7 +3,7 @@ import { extractCompilableConfig } from '@ton/blueprint/dist/compile/compile';
 import { doCompileFunc } from '@ton/blueprint/dist/compile/func/compile.func';
 import fs from 'fs';
 import { doCompileTolk } from '@ton/blueprint/dist/compile/tolk/compile.tolk';
-import { Blockchain, loadConfig } from '@ton/sandbox';
+import { Blockchain } from '@ton/sandbox';
 
 const PROJECT_ROOT = __dirname + '/../';
 const CONTRACTS_FUNC_ROOT = `${PROJECT_ROOT}/contracts_FunC/`;
@@ -74,9 +74,9 @@ function setGlobalVersion(blockchainConfig: Cell, version: number, capabilities?
     return blockchainConfig;
 }
 
-// activate TVM 11 before it's officially voted to and turned on by default
-export function activateTVM11(blockchain: Blockchain) {
-    blockchain.setConfig(setGlobalVersion(blockchain.config, 11));
+// activate TVM 12 before it's officially voted to and turned on by default
+export function activateTVM12(blockchain: Blockchain) {
+    blockchain.setConfig(setGlobalVersion(blockchain.config, 12));
 }
 
 // `myCompile` is a replacement for `compile` that searches for `.compile.ts` inside a given folder

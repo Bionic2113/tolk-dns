@@ -44,6 +44,7 @@ struct NftItemStorageMaybeNotInitialized {
 }
 
 struct CreaterResponse {
+    op: uint32
     queryID: uint64
 }
 
@@ -68,7 +69,7 @@ fun startLoadingNftItemStorage(): NftItemStorageMaybeNotInitialized {
 }
 
 struct NftItemStorage {
-    itemIndex: uint64
+    itemIndex: uint256
     collectionAddress: address
     ownerAddress: address
     content: cell //Cell<SnakeString>
@@ -82,7 +83,7 @@ fun NftItemStorage.save(self) {
 }
 
 struct NftItemStorageNotInitialized {
-    itemIndex: uint64
+    itemIndex: uint256
     collectionAddress: address
 }
 
@@ -94,7 +95,7 @@ fun NftCollectionStorage.save(self) {
     contract.setData(self.toCell());
 }
 
-fun calcDeployedNftItem(itemIndex: uint64, collectionAddress: address, nftItemCode: cell): AutoDeployAddress {
+fun calcDeployedNftItem(itemIndex: uint256, collectionAddress: address, nftItemCode: cell): AutoDeployAddress {
     val emptyNftItemStorage: NftItemStorageNotInitialized = { itemIndex, collectionAddress };
 
     return { stateInit: { code: nftItemCode, data: emptyNftItemStorage.toCell() } };

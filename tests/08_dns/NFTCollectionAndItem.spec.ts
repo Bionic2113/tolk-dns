@@ -1,9 +1,8 @@
-import { Blockchain, SandboxContract, TreasuryContract, Treasury, loadConfig, updateConfig } from '@ton/sandbox';
+import { Blockchain, SandboxContract, TreasuryContract, Treasury } from '@ton/sandbox';
 import {
     Address,
     beginCell,
     Cell,
-    comment,
     SendMode,
     toNano,
     Dictionary,
@@ -16,9 +15,8 @@ import { NFTCollection, aliceIndex } from '../../wrappers/08_dns/NFTCollection';
 import { NFTItem, CONTENT, EDITED_CONTENT, CONTENT_WITH_WALLET } from '../../wrappers/08_dns/NFTItem';
 import '@ton/test-utils';
 import { randomAddress } from '@ton/test-utils';
-import { activateTVM11, myCompile } from '../my-compile';
+import { activateTVM12, myCompile } from '../my-compile';
 import { GasLogAndSave } from '../gas-logger';
-import { userInfo } from 'node:os';
 
 const numericFolder = '08_dns';
 const MONTH = 2592000;
@@ -38,7 +36,7 @@ describe(numericFolder, () => {
         royaltyAddress: randomAddress(),
     };
 
-    async function nftFixture(nftOwner: Treasury, itemBody: Cell) {
+    async function nftFixture(nftOwner: Treasury, itemBody: Cell, bench: boolean = false) {
         const nftDeployResult = await nftCollection.sendDeployNft(nftOwner, {
             body: itemBody,
             value: toNano('1000'),
@@ -59,6 +57,10 @@ describe(numericFolder, () => {
             success: true,
         });
 
+        if (bench) {
+            GAS_LOG.rememberGas('DEPLOY nft', nftDeployResult.transactions.slice(1));
+        }
+
         return blockchain.openContract(NFTItem.createFromAddress(nftAddress));
     }
 
@@ -76,7 +78,7 @@ describe(numericFolder, () => {
     describe('NFTItem', () => {
         beforeEach(async () => {
             blockchain = await Blockchain.create();
-            activateTVM11(blockchain);
+            activateTVM12(blockchain);
             blockchain.now = 1659171600 + 1;
 
             owner = await blockchain.treasury('owner');
@@ -108,15 +110,16 @@ describe(numericFolder, () => {
             });
         });
 
-        it('should deploy', async () => {
+        it('[bench] should deploy', async () => {
             const nftOwner = await blockchain.treasury('nft-owner');
             await nftFixture(
                 nftOwner.getSender(),
                 beginCell().storeUint(NFTCollection.OPCODES.DEPLOY_NFT, 32).storeStringTail('alice').endCell(),
+                true,
             );
         });
 
-        it('should transfer ownership', async () => {
+        it('[bench] should transfer ownership', async () => {
             const nftOwner = await blockchain.treasury('nft-owner');
             const nftReceiverAddress = randomAddress();
 
@@ -174,10 +177,11 @@ describe(numericFolder, () => {
             const { ownerAddress: ownerAfterTransfer } = await nftItem.getNftData();
 
             expect(ownerAfterTransfer).toEqualAddress(nftReceiverAddress);
+
+            GAS_LOG.rememberGas('TRANSFER nft', result.transactions.slice(1));
         });
 
         it('should item loss', async () => {
-            // blockchain.now = 1659171600;
             const nftOwner = await blockchain.treasury('nft-owner');
 
             const nftItem = blockchain.openContract(
@@ -248,7 +252,7 @@ describe(numericFolder, () => {
             expect(result.domain).toEqualCell(beginCell().storeUint(0, 8).storeStringTail('alice.ton').endCell());
         });
 
-        it('should get static data', async () => {
+        it('[bench] should get static data', async () => {
             const nftOwner = await blockchain.treasury('nft-owner');
             const someUser = await blockchain.treasury('some-user');
 
@@ -286,9 +290,11 @@ describe(numericFolder, () => {
                     .storeAddress(nftCollection.address)
                     .endCell(),
             });
+
+            GAS_LOG.rememberGas('GET static data', result.transactions.slice(1));
         });
 
-        it('should item finish auction change content', async () => {
+        it('[bench] should item finish auction change content', async () => {
             const nftOwner = await blockchain.treasury('nft-owner');
             const someUser = await blockchain.treasury('some-user');
 
@@ -329,6 +335,9 @@ describe(numericFolder, () => {
                 from: nftItem.address,
                 mode: 2,
                 body: beginCell().storeUint(0x370fec51, 32).storeUint(1, 64).endCell(),
+                value: (x) => {
+                    return x ? toNano('999') >= x && x >= toNano('998') : false;
+                },
             });
 
             const result_2 = await nftItem.sendDeploy(someUser.getSender(), {
@@ -341,9 +350,11 @@ describe(numericFolder, () => {
             expect(result_2.transactions).toHaveTransaction({
                 exitCode: 410,
             });
+
+            GAS_LOG.rememberGas('AUCTION change content', result.transactions.slice(1));
         });
 
-        it('should item fill up', async () => {
+        it('[bench] should item fill up', async () => {
             const nftOwner = await blockchain.treasury('nft-owner');
             const someUser = await blockchain.treasury('some-user');
 
@@ -394,9 +405,11 @@ describe(numericFolder, () => {
             expect(result_2.transactions).toHaveTransaction({
                 exitCode: 406,
             });
+
+            GAS_LOG.rememberGas('FILL UP item', result.transactions.slice(1));
         });
 
-        it('should item edit record', async () => {
+        it('[bench] should item edit record', async () => {
             const nftOwner = await blockchain.treasury('nft-owner');
             const someUser = await blockchain.treasury('some-user');
 
@@ -463,6 +476,8 @@ describe(numericFolder, () => {
             expect(result_2.transactions).toHaveTransaction({
                 exitCode: 411,
             });
+
+            GAS_LOG.rememberGas('CHANGE record', result.transactions.slice(1));
         });
 
         it('should item delete record', async () => {
@@ -520,7 +535,7 @@ describe(numericFolder, () => {
             });
         });
 
-        it('item config', async () => {
+        it('[bench] item config', async () => {
             const configDict = Dictionary.loadDirect(
                 Dictionary.Keys.Int(32),
                 Dictionary.Values.Cell(),
@@ -594,9 +609,11 @@ describe(numericFolder, () => {
                     }),
                 );
             }
+
+            GAS_LOG.rememberGas('CONFIG fill up', result.transactions.slice(1));
         });
 
-        it('item config transfer', async () => {
+        it('[bench] item config transfer', async () => {
             const nftOwner = await blockchain.treasury('nft-owner');
             const someUser = await blockchain.treasury('some-user');
 
@@ -688,8 +705,10 @@ describe(numericFolder, () => {
                     }),
                 );
             }
+
+            GAS_LOG.rememberGas('CONFIG transfer item', result.transactions.slice(1));
         });
-        it('item bid', async () => {
+        it('[bench] item bid', async () => {
             const nftOwner = await blockchain.treasury('nft-owner');
             const someUser = await blockchain.treasury('some-user');
 
@@ -762,8 +781,10 @@ describe(numericFolder, () => {
                     }),
                 );
             }
+
+            GAS_LOG.rememberGas('BID item', result.transactions.slice(1));
         });
-        it('item bid prolong', async () => {
+        it('[bench] item bid prolong', async () => {
             const nftOwner = await blockchain.treasury('nft-owner');
             const someUser = await blockchain.treasury('some-user');
 
@@ -836,6 +857,8 @@ describe(numericFolder, () => {
                     }),
                 );
             }
+
+            GAS_LOG.rememberGas('BID item prolong', result.transactions.slice(1));
         });
 
         it('should item already init', async () => {
@@ -887,7 +910,7 @@ describe(numericFolder, () => {
 
         beforeEach(async () => {
             blockchain = await Blockchain.create();
-            activateTVM11(blockchain);
+            activateTVM12(blockchain);
             blockchain.now = 1659171600 - 1;
 
             initState = NFTCollection.configToCell({
@@ -1244,7 +1267,7 @@ describe(numericFolder, () => {
             expect(dns.domain).toEqualCell(beginCell().storeUint(0xba93, 16).storeAddress(nftItem.address).endCell());
         });
 
-        it('collection config', async () => {
+        it('[bench] collection config', async () => {
             const configDict = Dictionary.loadDirect(
                 Dictionary.Keys.Int(32),
                 Dictionary.Values.Cell(),
@@ -1299,6 +1322,8 @@ describe(numericFolder, () => {
             if (contract.accountState?.type == 'active') {
                 expect(contract.accountState.state.data).toEqualCell(initState!);
             }
+
+            GAS_LOG.rememberGas('DEPLOY nft config', deployResult.transactions.slice(1));
         });
     });
 });

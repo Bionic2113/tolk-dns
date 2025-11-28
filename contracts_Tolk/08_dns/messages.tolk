@@ -47,6 +47,7 @@ struct (0x05138d91) NotificationForNewOwner {
 }
 
 struct (0x1a0b9d51) EditContent {
+    queryID: uint64
     ref: cell
 }
 
@@ -58,23 +59,29 @@ struct (0x557cea20) Refund {
     queryID: uint64
 }
 
-struct (0x5fcc3d14) AskToChangeOwnership {
-    queryId: uint64
+struct (0x5fcc3d14) Transfer {
+    queryID: uint64
     newOwnerAddress: address
     sendExcessesTo: address
+    dontUseCustomPayload: int1
     forwardTonAmount: coins
     forwardPayload: RemainingBitsAndRefs
 }
 
 struct (0x4eb1f0f9) ChangeDNSRecord {
+    queryID: uint64
     key: uint256
     refs: RemainingBitsAndRefs
 }
 
 struct (0x44beae41) ProcessGovernanceDecision {
     queryID: uint64
+}
+
+struct ConfigValue {
     newOwnerAddress: address
     sendExcessesTo: address
+    dontUseCustomPayload: int1
     forwardTonAmount: coins
     forwardPayload: RemainingBitsAndRefs
 }
@@ -84,11 +91,11 @@ struct (0x4ed14b65) DNSBalanceRelease {
 }
 
 struct (0x2fcb26a2) RequestStaticData {
-    queryId: uint64
+    queryID: uint64
 }
 
 struct (0x8b771735) ResponseStaticData {
-    queryId: uint64
+    queryID: uint64
     itemIndex: uint256
     collectionAddress: address
 }

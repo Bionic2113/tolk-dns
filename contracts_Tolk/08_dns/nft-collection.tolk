@@ -32,14 +32,16 @@ fun onInternalMessage(in: InMessage) {
             val now_time = blockchain.now();
             assert (now_time > AUCTION_START_TIME) throw 199;
 
-            val storage = DeployNft.load(in.body);
+            in.body.skipBits(32);
+            val storage = DeployNft { domain: readDomainFromComment(in.body) };
+            // DeployNft.load(in.body);
             val len: int = storage.domain.remainingBitsCount();
 
             assert (len > 3 * 8) throw 200; // minimum 4 characters
             assert (len <= 126 * 8) throw 201; // maximum 126 characters
             assert (mod(len, 8) == 0) throw 202;
             assert (checkDomainString(storage.domain)) throw 203;
-            assert (msg_value >= minPrice(len, now_time)) throw 204;
+            assert (in.valueCoins >= minPrice(len, now_time)) throw 204;
             val itemIndex: int = storage.domain.hash();
 
             val config: cell? = blockchain.configParam(DNS_CONFIG_ID);

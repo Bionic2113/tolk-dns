@@ -1,4 +1,3 @@
-import { NumberBase } from '@tact-lang/compiler';
 import {
     address,
     Address,

@@ -74,7 +74,7 @@ PROGRAM{
       IF:<{
         SWAP
         1 EQINT
-        2022 THROWIFNOT
+        202 THROWIFNOT
         s0 s2 XCHG
         LDREF
         DROP

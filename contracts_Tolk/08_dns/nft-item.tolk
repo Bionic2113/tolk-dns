@@ -5,12 +5,10 @@ import "errors"
 import "messages"
 import "storage"
 
-fun min_tons_for_storage(): int
-    asm "1000000000 PUSHINT" // 1 TON
-
 const AUCTION_START_DURATION = 604800 // 1 week = 60 * 60 * 24 * 7; in testnet 5 min
 const AUCTION_END_DURATION = 3600 // 1 hour = 60 * 60; in testnet 1 min
 const AUCTION_PROLONGATION = 3600 // 1 hour = 60 * 60; in testnet 1 min
+const MIN_TONS_FOR_STORAGE = 1000000000
 /*
 ;;
 ;;  Storage
@@ -68,33 +66,37 @@ fun unpackAuction(auction: cell?): (address, coins, uint64) {
     return (createAddressNone(), 0, 0); // return (null, 0, 0);
 }
 
-fun auctionCheck(storage: NftItemStorage, msgBalance: coins, auctionComplete: bool) {
+fun auctionCheck(
+    mutate storage: NftItemStorage,
+    msgBalance: coins,
+    queryID: uint64,
+    auctionComplete: bool,
+) {
     if (!auctionComplete || storage.auction == null) {
         return;
     }
 
     val auction = unpackAuction(storage.auction);
-
     var myBalance = contract.getOriginalBalance();
     val balanceWithoutMsg = myBalance - msgBalance;
-    val amountToSend: coins = (auction.1 > balanceWithoutMsg - min_tons_for_storage())
-         ? (balanceWithoutMsg - min_tons_for_storage())
-         : auction.1;
+    val amountToSend: coins = (auction.1 > balanceWithoutMsg - MIN_TONS_FOR_STORAGE)
+        ? (balanceWithoutMsg - MIN_TONS_FOR_STORAGE)
+        : auction.1;
 
     if (amountToSend > 0) {
         val msg = createMessage({
             bounce: false,
-            dest: auction.0,
+            dest: storage.collectionAddress,
             value: amountToSend,
-            body: JustFillUp { queryID: blockchain.logicalTime() },
+            body: JustFillUp { queryID }, // blockchain.logicalTime() },
         });
 
-        msg.send(SEND_MODE_PAY_FEES_SEPARATELY);
+        msg.send(SEND_MODE_IGNORE_ERRORS);
         myBalance -= amountToSend;
     }
 
     storage.ownerAddress = auction.0;
-    storage.auction = createEmptyCell();
+    storage.auction = null;
     storage.save();
 }
 
@@ -110,7 +112,7 @@ fun transwerOwnership(
     assert (newOwnerAddress.getWorkchain() == BASECHAIN) throw ERROR_INVALID_WORKCHAIN;
 
     val fwdFee = originalForwardFee;
-    var restAmount = contract.getOriginalBalance() - min_tons_for_storage();
+    var restAmount = contract.getOriginalBalance() - MIN_TONS_FOR_STORAGE;
     if (forwardTonAmount) {
         restAmount -= (forwardTonAmount + fwdFee);
     }
@@ -149,12 +151,13 @@ fun transwerOwnership(
     }
 
     storage.ownerAddress = newOwnerAddress;
+    storage.lastFillUpTime = blockchain.now();
     storage.save();
 }
 
 type AllowedMessageToNftItem =
     | AuctionCheck
-    | AskToChangeOwnership
+    | Transfer
     | EditContent
     | ChangeDNSRecord
     | ProcessGovernanceDecision
@@ -164,6 +167,7 @@ type AllowedMessageToNftItem =
 // Тут не все. Надо проверить и дописать
 fun onInternalMessage(in: InMessage) {
     var loadingStorage = startLoadingNftItemStorage();
+
     if (!loadingStorage.isInitialized()) {
         val uninitedSt = loadingStorage.parseNotInitialized();
         assert (in.senderAddress == uninitedSt.collectionAddress) throw ERROR_NOT_FROM_COLLECTION;
@@ -197,9 +201,9 @@ fun onInternalMessage(in: InMessage) {
     if (storage.collectionAddress == in.senderAddress) {
         val respMsg = createMessage({
             bounce: false,
-            dest: in.senderAddress,
+            dest: in.body.loadAddress(),
             value: 0,
-            body: CreaterResponse { queryID: blockchain.logicalTime() },
+            body: CreaterResponse { op: 0, queryID: blockchain.logicalTime() },
         });
 
         respMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
@@ -230,9 +234,9 @@ fun onInternalMessage(in: InMessage) {
             ) throw 407; //  5% greater then previous bid
 
             val myBalance = contract.getOriginalBalance();
-            val amountToSend: coins = (auction.1 > myBalance - min_tons_for_storage())
-                 ? (myBalance - min_tons_for_storage())
-                 : auction.1;
+            val amountToSend: coins = (auction.1 > myBalance - MIN_TONS_FOR_STORAGE)
+                ? (myBalance - MIN_TONS_FOR_STORAGE)
+                : auction.1;
 
             if (amountToSend > 0) {
                 val msg = createMessage({
@@ -260,8 +264,8 @@ fun onInternalMessage(in: InMessage) {
             return;
         }
 
-        AskToChangeOwnership => {
-            auctionCheck(storage, in.valueCoins, auctionComplete);
+        Transfer => {
+            auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
 
             assert (in.senderAddress == storage.ownerAddress) throw ERROR_NOT_FROM_OWNER;
 
@@ -271,14 +275,15 @@ fun onInternalMessage(in: InMessage) {
                 msg.forwardTonAmount,
                 msg.newOwnerAddress,
                 msg.sendExcessesTo,
-                msg.queryId,
+                // as any_address,
+                msg.queryID,
                 msg.forwardPayload,
                 storage
             );
         }
 
         EditContent => {
-            auctionCheck(storage, in.valueCoins, auctionComplete);
+            auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
 
             assert (in.senderAddress == storage.ownerAddress) throw 410;
 
@@ -288,7 +293,7 @@ fun onInternalMessage(in: InMessage) {
         }
 
         ChangeDNSRecord => {
-            auctionCheck(storage, in.valueCoins, auctionComplete);
+            auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
 
             assert (in.senderAddress == storage.ownerAddress) throw 411;
 
@@ -309,7 +314,7 @@ fun onInternalMessage(in: InMessage) {
         }
 
         ProcessGovernanceDecision => {
-            auctionCheck(storage, in.valueCoins, auctionComplete);
+            auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
 
             assert (storage.auction == null) throw 413;
 
@@ -324,15 +329,18 @@ fun onInternalMessage(in: InMessage) {
 
             assert (cfg_op == 0 || cfg_op == 1) throw 416;
 
+            var cfgVal = lazy ConfigValue.fromSlice(cfg.0!);
+
             if (cfg_op == 0) {
                 // transfer
                 transwerOwnership(
                     in.originalForwardFee,
-                    msg.forwardTonAmount,
-                    msg.newOwnerAddress,
-                    msg.sendExcessesTo,
+                    cfgVal.forwardTonAmount,
+                    cfgVal.newOwnerAddress,
+                    cfgVal.sendExcessesTo,
+                    // as any_address,
                     msg.queryID,
-                    msg.forwardPayload,
+                    cfgVal.forwardPayload,
                     storage
                 );
             }
@@ -351,7 +359,7 @@ fun onInternalMessage(in: InMessage) {
         }
 
         DNSBalanceRelease => {
-            auctionCheck(storage, in.valueCoins, auctionComplete);
+            auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
 
             assert (
                 (blockchain.now() - storage.lastFillUpTime > ONE_YEAR) && (storage.auction == null)
@@ -365,7 +373,7 @@ fun onInternalMessage(in: InMessage) {
             assert (in.valueCoins >= minPrice) throw 407;
 
             val balanceWithoutMsg = contract.getOriginalBalance() - in.valueCoins;
-            val amountToSend = balanceWithoutMsg - min_tons_for_storage();
+            val amountToSend = balanceWithoutMsg - MIN_TONS_FOR_STORAGE;
 
             if (amountToSend > 0) {
                 val respMsg = createMessage({
@@ -387,6 +395,8 @@ fun onInternalMessage(in: InMessage) {
         }
 
         RequestStaticData => {
+            auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
+
             val respondMsg = createMessage({
                 bounce: false,
                 dest: in.senderAddress,
@@ -398,7 +408,7 @@ fun onInternalMessage(in: InMessage) {
                 // value (coins) = 0 it will nevertheless fit into a message cell directly
                 body: UnsafeBodyNoRef {
                     forceInline: ResponseStaticData {
-                        queryId: msg.queryId,
+                        queryID: msg.queryID,
                         itemIndex: storage.itemIndex as uint256,
                         collectionAddress: storage.collectionAddress,
                     },
@@ -441,4 +451,61 @@ get fun get_nft_data(): NftDataReply {
         ownerAddress: storage.ownerAddress,
         content: storage.content,
     };
+}
+
+get fun get_editor(): address {
+    var loadingStorage = startLoadingNftItemStorage();
+    val storage = loadingStorage.parseInitialized();
+
+    return storage.ownerAddress;
+}
+
+get fun get_domain(): slice {
+    var loadingStorage = startLoadingNftItemStorage();
+    val storage = loadingStorage.parseInitialized();
+
+    return storage.domain.beginParse();
+}
+
+get fun get_auction_info(): (address, coins, uint64) {
+    var loadingStorage = startLoadingNftItemStorage();
+    val storage = loadingStorage.parseInitialized();
+
+    return unpackAuction(storage.auction);
+}
+
+get fun get_last_fill_up_time(): uint64 {
+    var loadingStorage = startLoadingNftItemStorage();
+    val storage = loadingStorage.parseInitialized();
+
+    return storage.lastFillUpTime;
+}
+
+get fun dnsresolve(subdomain: slice, category: int): (int, cell?) {
+    var subdomainBits: int = subdomain.remainingBitsCount();
+
+    assert (mod(subdomainBits, 8) == 0) throw 70;
+
+    var loadingStorage = startLoadingNftItemStorage();
+    val storage = loadingStorage.parseInitialized();
+
+    var cs: slice = storage.content.beginParse();
+    assert (cs.loadUint(8) == 0) throw 412; // data onchain tag
+    var keyvalueMap: dict = cs.loadDict();
+
+    var startsWithZeroByte: bool = subdomain.preloadInt(8) == 0;
+    assert (startsWithZeroByte) throw 413;
+
+    if (subdomainBits > 8) {
+        // more than "." requested
+        category = stringSha256("dns_next_resolver");
+    }
+
+    if (category == 0) {
+        //  all categories are requested
+        return (8, keyvalueMap.toCell());
+    }
+
+    var (value: cell?, found: bool) = keyvalueMap.uDictGetRef(256, category);
+    return (8, value);
 }

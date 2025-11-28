@@ -41,7 +41,7 @@ slice read_domain_from_comment(slice in_msg_body) {
         int refs_len = in_msg_body.slice_refs();
         need_break = refs_len == 0;
         if (~ need_break) {
-            throw_unless(2022, refs_len == 1);
+            throw_unless(202, refs_len == 1);
             in_msg_body = in_msg_body~load_ref().begin_parse();
         }
     } until (need_break);

@@ -1,5 +1,17 @@
 {
-  "gas": {},
+  "gas": {
+    "DEPLOY nft": 23504,
+    "TRANSFER nft": 8814,
+    "GET static data": 6731,
+    "AUCTION change content": 10356,
+    "FILL UP item": 4953,
+    "CHANGE record": 9619,
+    "CONFIG fill up": 8923,
+    "CONFIG transfer item": 10824,
+    "BID item": 8777,
+    "BID item prolong": 8813,
+    "DEPLOY nft config": 24943
+  },
   "codeSize": {
     "nft-item bits": 12490,
     "nft-item cells": 43,
