@@ -19,19 +19,19 @@ In gas units, plus code side (bits / cells).
 
 | Operation                       | FunC       | Tolk       | **Gas savings** |
 |---------------------------------|------------|------------|-----------------|
-| DEPLOY nft                      | 23504      | 16480      | **-29.88%**     |
-| TRANSFER nft                    | 8814       | 7254       | **-17.70%**     |
-| GET static data                 | 6731       | 4849       | **-27.96%**     |
-| AUCTION change content          | 10356      | 7884       | **-23.87%**     |
-| FILL UP item                    | 4953       | 3019       | **-39.05%**     |
-| CHANGE record                   | 9619       | 8143       | **-15.34%**     |
-| CONFIG fill up                  | 8923       | 6483       | **-27.35%**     |
-| CONFIG transfer item            | 10824      | 9278       | **-14.28%**     |
-| BID item                        | 8777       | 6211       | **-29.24%**     |
-| BID item prolong                | 8813       | 6247       | **-29.12%**     |
-| DEPLOY nft config               | 24943      | 17988      | **-27.88%**     |
-| code size: nft-item             | 12490 / 43 | 12942 / 35 |                 |
-| code size: nft-collection       | 4863 / 29  | 4968 / 17  |                 |
+| DEPLOY nft                      | 23504      | 15707      | **-33.17%**     |
+| TRANSFER nft                    | 8814       | 7361       | **-16.49%**     |
+| GET static data                 | 6731       | 4908       | **-27.08%**     |
+| AUCTION change content          | 10356      | 7886       | **-23.85%**     |
+| FILL UP item                    | 4953       | 3156       | **-36.28%**     |
+| CHANGE record                   | 9619       | 8066       | **-16.15%**     |
+| CONFIG fill up                  | 8923       | 6506       | **-27.09%**     |
+| CONFIG transfer item            | 10824      | 9144       | **-15.52%**     |
+| BID item                        | 8777       | 6368       | **-27.45%**     |
+| BID item prolong                | 8813       | 6404       | **-27.33%**     |
+| DEPLOY nft config               | 24943      | 17215      | **-30.98%**     |
+| code size: nft-item             | 12490 / 43 | 13055 / 35 |                 |
+| code size: nft-collection       | 4863 / 29  | 4600 / 17  |                 |
 
 <br>
 

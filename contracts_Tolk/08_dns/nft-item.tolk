@@ -1,4 +1,3 @@
-// import "@stdlib/gas-payments"
 import "@stdlib/tvm-dicts"
 import "dns-utils"
 import "errors"

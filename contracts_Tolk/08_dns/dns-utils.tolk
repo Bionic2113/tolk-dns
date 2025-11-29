@@ -15,25 +15,6 @@ const OP_PROCESS_GOVERNANCE_DECISION = 0x44beae41
 fun mod(x: int, y: int): int
     asm "MOD"
 
-@pure
-fun nullCell(): cell
-    asm "PUSHNULL"
-
-fun readDomainFromComment(inMsgBody: slice): slice {
-    var needBreak: bool = false;
-    var result: builder = beginCell();
-    do {
-        result = result.storeSlice(inMsgBody.loadBits(inMsgBody.remainingBitsCount()));
-        var refsLen: int = inMsgBody.remainingRefsCount();
-        needBreak = refsLen == 0;
-        if (!needBreak) {
-            assert (refsLen == 1) throw 202;
-            inMsgBody = inMsgBody.loadRef().beginParse();
-        }
-    } while (!needBreak);
-    return result.endCell().beginParse();
-}
-
 fun checkDomainString(domain: slice): bool {
     var i: int = 0;
     var len: int = domain.remainingBitsCount();

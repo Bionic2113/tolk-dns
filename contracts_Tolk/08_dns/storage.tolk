@@ -1,40 +1,12 @@
-// SnakeString describes a (potentially long) string inside a cell;
-// short strings are stored as-is, like "my-picture.png";
-// long strings are nested refs, like "xxxx".ref("yyyy".ref("zzzz"))
-type SnakeString = slice
-
-fun SnakeString.unpackFromSlice(mutate s: slice) {
-    // obviously, SnakeString can be only the last: it's just "the remainder";
-    // for correctness, it's better to validate it has no more refs:
-    // assert (s.remainingRefsCount() <= 1) throw 5;
-    // but since here we're matching the original FunC implementation, leave no checks
-    val snakeRemainder = s;
-    s = createEmptySlice(); // no more left to read
-    return snakeRemainder;
-}
-
-fun SnakeString.packToBuilder(self, mutate b: builder) {
-    b.storeSlice(self);
-}
-
-struct RoyaltyParams {
-    numerator: uint16
-    denominator: uint16
-    royaltyAddress: address
-}
-
 struct NftCollectionStorage {
-    // adminAddress: address
-    // nextItemIndex: uint64
     content: cell //Cell<CollectionContent>
     nftItemCode: cell
 }
-// royaltyParams: Cell<RoyaltyParams>
-struct CollectionContent {
-    collectionMetadata: cell
-    commonContent: Cell<SnakeString>
-}
 
+// struct CollectionContent {
+//     collectionMetadata: cell
+//     commonContent: Cell<SnakeString>
+// }
 // actual storage of an NFT item is tricky: it's either initialized or not;
 // after NFT has been inited, it's represented as `NftItemStorage`;
 // before initialization, it has only itemIndex and collectionAddress: `NftItemStorageNotInitialized`;
@@ -72,7 +44,7 @@ struct NftItemStorage {
     itemIndex: uint256
     collectionAddress: address
     ownerAddress: address?
-    content: cell //Cell<SnakeString>
+    content: cell
     domain: cell
     auction: cell?
     lastFillUpTime: uint64
@@ -99,4 +71,21 @@ fun calcDeployedNftItem(itemIndex: uint256, collectionAddress: address, nftItemC
     val emptyNftItemStorage: NftItemStorageNotInitialized = { itemIndex, collectionAddress };
 
     return { stateInit: { code: nftItemCode, data: emptyNftItemStorage.toCell() } };
+}
+
+struct NftDataReply {
+    isInitialized: bool
+    itemIndex: int
+    collectionAddress: address
+    ownerAddress: address? = null
+    content: cell? = null
+}
+
+struct ContentNFT {
+    sender: address
+    domain: Cell<Domain>
+}
+
+struct Domain {
+    domain: slice
 }

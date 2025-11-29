@@ -19,7 +19,7 @@ fun onInternalMessage(in: InMessage) {
     }.toCell());
 }
 
-get fun dnsResolve(subdomain: slice, category: int): (int, cell) {
+get fun dnsResolve(subdomain: slice, category: int): (int, cell?) {
     val subdomainLen = subdomain.remainingBitsCount();
 
     assert (mod(subdomainLen, 8) == 0) throw 70;
@@ -27,7 +27,7 @@ get fun dnsResolve(subdomain: slice, category: int): (int, cell) {
     val startsWithZeroByte: bool = subdomain.preloadInt(8) == 0;
 
     if (startsWithZeroByte && subdomainLen == 8) {
-        return (8, nullCell());
+        return (8, null);
     }
 
     if (startsWithZeroByte) {
@@ -60,5 +60,5 @@ get fun dnsResolve(subdomain: slice, category: int): (int, cell) {
         return (4 * 8 + (startsWithZeroByte ? 8 : 0), result);
     }
 
-    return (0, nullCell());
+    return (0, null);
 }

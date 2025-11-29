@@ -10,21 +10,11 @@ struct (0x00000000) DeployNft {
     domain: slice
 }
 
-type Domain = slice
-struct ContentNFT {
-    sender: address
-    domain: cell // Cell<Domain>
-}
-// queryId: uint64
-// itemIndex: uint64
-// attachTonAmount: coins
-// initParams: Cell<NftItemInitAtDeployment>
 fun DeployNft.load(comment: slice) {
     var needBreak: bool = false;
     var domain: builder = beginCell();
 
     do {
-        // while (!needBreak) {
         domain.storeSlice(comment.loadBits(comment.remainingBitsCount()));
 
         val refsLen = comment.remainingRefsCount();
@@ -35,6 +25,7 @@ fun DeployNft.load(comment: slice) {
             comment = comment.loadRef().beginParse();
         }
     } while (!needBreak);
+
     return DeployNft { domain: domain.endCell().beginParse() };
 }
 
@@ -98,12 +89,4 @@ struct (0x8b771735) ResponseStaticData {
     queryID: uint64
     itemIndex: uint256
     collectionAddress: address
-}
-
-struct NftDataReply {
-    isInitialized: bool
-    itemIndex: int
-    collectionAddress: address
-    ownerAddress: address? = null
-    content: cell? = null
 }
