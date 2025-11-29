@@ -1,46 +1,68 @@
 [
-    {
-        "commitDesc": "original FunC",
-        "gas": {
-            "DEPLOY nft": 23504,
-            "TRANSFER nft": 8814,
-            "GET static data": 6731,
-            "AUCTION change content": 10356,
-            "FILL UP item": 4953,
-            "CHANGE record": 9619,
-            "CONFIG fill up": 8923,
-            "CONFIG transfer item": 10824,
-            "BID item": 8777,
-            "BID item prolong": 8813,
-            "DEPLOY nft config": 24943
-        },
-        "codeSize": {
-            "nft-item bits": 12490,
-            "nft-item cells": 43,
-            "nft-collection bits": 4863,
-            "nft-collection cells": 29
-        }
+  {
+    "commitDesc": "original FunC",
+    "gas": {
+      "DEPLOY nft": 23504,
+      "TRANSFER nft": 8814,
+      "GET static data": 6731,
+      "AUCTION change content": 10356,
+      "FILL UP item": 4953,
+      "CHANGE record": 9619,
+      "CONFIG fill up": 8923,
+      "CONFIG transfer item": 10824,
+      "BID item": 8777,
+      "BID item prolong": 8813,
+      "DEPLOY nft config": 24943
     },
-    {
-        "commitDesc": "compiler Tolk v1.0 beta",
-        "gas": {
-            "DEPLOY nft": 16480,
-            "TRANSFER nft": 7254,
-            "GET static data": 4849,
-            "AUCTION change content": 7884,
-            "FILL UP item": 3019,
-            "CHANGE record": 8143,
-            "CONFIG fill up": 6483,
-            "CONFIG transfer item": 9278,
-            "BID item": 6211,
-            "BID item prolong": 6247,
-            "DEPLOY nft config": 17988
-        },
-        "codeSize": {
-            "nft-item bits": 12942,
-            "nft-item cells": 35,
-            "nft-collection bits": 4968,
-            "nft-collection cells": 17
-        }
+    "codeSize": {
+      "nft-item bits": 12490,
+      "nft-item cells": 43,
+      "nft-collection bits": 4863,
+      "nft-collection cells": 29
     }
+  },
+  {
+    "commitDesc": "compiler Tolk v1.0 beta",
+    "gas": {
+      "DEPLOY nft": 16480,
+      "TRANSFER nft": 7254,
+      "GET static data": 4849,
+      "AUCTION change content": 7884,
+      "FILL UP item": 3019,
+      "CHANGE record": 8143,
+      "CONFIG fill up": 6483,
+      "CONFIG transfer item": 9278,
+      "BID item": 6211,
+      "BID item prolong": 6247,
+      "DEPLOY nft config": 17988
+    },
+    "codeSize": {
+      "nft-item bits": 12942,
+      "nft-item cells": 35,
+      "nft-collection bits": 4968,
+      "nft-collection cells": 17
+    }
+  },
+  {
+    "commitDesc": "tolk v1.1",
+    "gas": {
+      "DEPLOY nft": 16580,
+      "TRANSFER nft": 7254,
+      "GET static data": 4899,
+      "AUCTION change content": 7959,
+      "FILL UP item": 3144,
+      "CHANGE record": 8193,
+      "CONFIG fill up": 6533,
+      "CONFIG transfer item": 9278,
+      "BID item": 6336,
+      "BID item prolong": 6372,
+      "DEPLOY nft config": 18088
+    },
+    "codeSize": {
+      "nft-item bits": 12935,
+      "nft-item cells": 35,
+      "nft-collection bits": 4968,
+      "nft-collection cells": 17
+    }
+  }
 ]

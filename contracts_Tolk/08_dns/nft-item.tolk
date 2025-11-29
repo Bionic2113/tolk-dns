@@ -9,46 +9,7 @@ const AUCTION_START_DURATION = 604800 // 1 week = 60 * 60 * 24 * 7; in testnet 5
 const AUCTION_END_DURATION = 3600 // 1 hour = 60 * 60; in testnet 1 min
 const AUCTION_PROLONGATION = 3600 // 1 hour = 60 * 60; in testnet 1 min
 const MIN_TONS_FOR_STORAGE = 1000000000
-/*
-;;
-;;  Storage
-;;
-;;  uint64 index
-;;  MsgAddressInt collection_address
-;;  MsgAddressInt owner_address
-;;  cell content
-;;
-struct NftItemStorage {
-    itemIndex: uint64
-    collectionAddress: address
-    ownerAddress: address
-    content: cell //Cell<SnakeString>
-    domain: cell
-    auction: cell
-    lastFillUpTime: uint64
-}
 
-(int, int, slice, slice, cell) load_data() {
-    slice ds = get_data().begin_parse();
-    var (index, collection_address) = (ds~load_uint(64), ds~load_msg_addr());
-    if (ds.slice_bits() > 0) {
-      return (-1, index, collection_address, ds~load_msg_addr(), ds~load_ref());
-    } else {
-      return (0, index, collection_address, null(), null()); ;; nft not initialized yet
-    }
-}
-
-() store_data(int index, slice collection_address, slice owner_address, cell content) impure {
-    set_data(
-        begin_cell()
-            .store_uint(index, 64)
-            .store_slice(collection_address)
-            .store_slice(owner_address)
-            .store_ref(content)
-            .end_cell()
-    );
-}
-*/
 fun packAuction(maxBidAddress: address, maxBidAmount: coins, auctionEndTime: int): cell {
     return beginCell().storeAddress(maxBidAddress).storeCoins(maxBidAmount).storeUint(
         auctionEndTime,
@@ -63,7 +24,7 @@ fun unpackAuction(auction: cell?): (address, coins, uint64) {
         return (ds.loadAddress(), ds.loadCoins(), ds.loadUint(64));
     }
 
-    return (createAddressNone(), 0, 0); // return (null, 0, 0);
+    return (createAddressNone(), 0, 0);
 }
 
 fun auctionCheck(
@@ -88,7 +49,7 @@ fun auctionCheck(
             bounce: false,
             dest: storage.collectionAddress,
             value: amountToSend,
-            body: JustFillUp { queryID }, // blockchain.logicalTime() },
+            body: JustFillUp { queryID },
         });
 
         msg.send(SEND_MODE_IGNORE_ERRORS);
@@ -164,7 +125,6 @@ type AllowedMessageToNftItem =
     | DNSBalanceRelease
     | RequestStaticData
 
-// Тут не все. Надо проверить и дописать
 fun onInternalMessage(in: InMessage) {
     var loadingStorage = startLoadingNftItemStorage();
 
@@ -422,14 +382,6 @@ fun onInternalMessage(in: InMessage) {
             assert (in.body.isEmpty()) throw 0xFFFF;
         }
     }
-}
-
-struct NftDataReply {
-    isInitialized: bool
-    itemIndex: int
-    collectionAddress: address
-    ownerAddress: address? = null
-    content: cell? = null // Cell<SnakeString>? = null
 }
 
 get fun get_nft_data(): NftDataReply {

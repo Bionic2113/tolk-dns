@@ -99,3 +99,11 @@ struct (0x8b771735) ResponseStaticData {
     itemIndex: uint256
     collectionAddress: address
 }
+
+struct NftDataReply {
+    isInitialized: bool
+    itemIndex: int
+    collectionAddress: address
+    ownerAddress: address? = null
+    content: cell? = null
+}

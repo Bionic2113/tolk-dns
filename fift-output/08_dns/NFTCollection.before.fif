@@ -2,14 +2,6 @@
 // automatically generated from nft-collection.tolk, dns-utils.tolk, messages.tolk, storage.tolk
 PROGRAM{
   DECLPROC minPrice()
-  DECLPROC NftItemStorageMaybeNotInitialized.isInitialized()
-  DECLPROC NftItemStorageMaybeNotInitialized.parseNotInitialized()
-  DECLPROC NftItemStorageMaybeNotInitialized.parseInitialized()
-  DECLPROC startLoadingNftItemStorage()
-  DECLPROC NftItemStorage.save()
-  DECLPROC NftCollectionStorage.save()
-  DECLPROC DeployNft.load()
-  DECLPROC saveData()
   0 DECLMETHOD onInternalMessage()
   102491 DECLMETHOD get_collection_data()
   92067 DECLMETHOD get_nft_address_by_index()
@@ -123,116 +115,6 @@ PROGRAM{
       100 PUSHINT           	//  '53 '54=100
       DIV                   	//  minPrice.0
     }>
-  }>
-  // storage.tolk:54  (note: function never called!)
-  NftItemStorageMaybeNotInitialized.isInitialized() PROC:<{	//  self
-    // 55: val hasContent = self.contractData.remainingRefsCount()
-    SREFS                   	//  hasContent
-  }>
-  // storage.tolk:59  (note: function never called!)
-  NftItemStorageMaybeNotInitialized.parseNotInitialized() PROC:<{	//  self
-//  s
-    // 60: return NftItemStorageNotInitialized.fromSlice(self.contractData)
-    256 LDU                 	//  '5 s
-    LDMSGADDR               	//  '5 '6 s
-    ENDS                    	//  '5 '6
-  }>
-  // storage.tolk:63  (note: function never called!)
-  NftItemStorageMaybeNotInitialized.parseInitialized() PROC:<{	//  self
-//  s
-    // 64: return NftItemStorage.fromSlice(self.contractData)
-    256 LDU                 	//  '5 s
-    LDMSGADDR               	//  '5 '6 s
-    LDMSGADDR               	//  '5 '6 '7 s
-    LDREF                   	//  '5 '6 '7 '8 s
-    LDREF                   	//  '5 '6 '7 '8 '9 s
-    LDOPTREF                	//  '5 '6 '7 '8 '9 '10 s
-    64 LDU                  	//  '5 '6 '7 '8 '9 '10 '12 s
-    ENDS                    	//  '5 '6 '7 '8 '9 '10 '12
-  }>
-  // storage.tolk:67  (note: function never called!)
-  startLoadingNftItemStorage() PROC:<{	// 
-    // 68: return { contractData: contract.getData().beginParse() }
-    c4 PUSH                 	//  '0
-    CTOS                    	//  '1
-  }>
-  // storage.tolk:81  (note: function never called!)
-  NftItemStorage.save() PROC:<{	//  self.itemIndex self.collectionAddress self.ownerAddress self.content self.domain self.auction self.lastFillUpTime
-    // 82: contract.setData(self.toCell())
-    s0 s6 XCHG
-    NEWC                    	//  self.lastFillUpTime self.collectionAddress self.ownerAddress self.content self.domain self.auction self.itemIndex b
-    256 STU                 	//  self.lastFillUpTime self.collectionAddress self.ownerAddress self.content self.domain self.auction b
-    s1 s5 XCHG              	//  self.lastFillUpTime self.auction self.ownerAddress self.content self.domain self.collectionAddress b
-    STSLICE                 	//  self.lastFillUpTime self.auction self.ownerAddress self.content self.domain b
-    s1 s3 XCHG              	//  self.lastFillUpTime self.auction self.domain self.content self.ownerAddress b
-    STSLICE                 	//  self.lastFillUpTime self.auction self.domain self.content b
-    STREF                   	//  self.lastFillUpTime self.auction self.domain b
-    STREF                   	//  self.lastFillUpTime self.auction b
-    STOPTREF                	//  self.lastFillUpTime b
-    64 STU                  	//  b
-    ENDC                    	//  '11
-    c4 POP                  	// 
-  }>
-  // storage.tolk:94  (note: function never called!)
-  NftCollectionStorage.save() PROC:<{	//  self.content self.nftItemCode
-    // 95: contract.setData(self.toCell())
-    SWAP
-    NEWC                    	//  self.nftItemCode self.content b
-    STREF                   	//  self.nftItemCode b
-    STREF                   	//  b
-    ENDC                    	//  '4
-    c4 POP                  	// 
-  }>
-  // messages.tolk:22  (note: function never called!)
-  DeployNft.load() PROC:<{    	//  comment
-    // 24: var domain: builder = beginCell()
-    NEWC                    	//  comment domain
-    // 26: do
-    UNTIL:<{
-      // 28: domain.storeSlice(comment.loadBits(comment.remainingBitsCount()))
-      OVER                  	//  comment domain comment
-      SBITS                 	//  comment domain '5
-      s1 s2 XCHG            	//  domain comment '5
-      LDSLICEX              	//  domain '8 comment
-      s0 s2 XCHG            	//  comment '8 domain
-      STSLICE               	//  comment domain
-      // 30: val refsLen = comment.remainingRefsCount()
-      OVER                  	//  comment domain comment
-      SREFS                 	//  comment domain refsLen
-      // 31: needBreak = refsLen == 0
-      DUP                   	//  comment domain refsLen refsLen
-      0 EQINT               	//  comment domain refsLen needBreak
-      // 33: if (!needBreak)
-      DUP                   	//  comment domain refsLen needBreak needBreak
-      IFNOT:<{              	//  comment domain refsLen needBreak
-        // 34: assert (refsLen == 1) throw 202
-        SWAP                	//  comment domain needBreak refsLen
-        1 EQINT             	//  comment domain needBreak '16
-        202 THROWIFNOT      	//  comment domain needBreak
-        // 35: comment = comment.loadRef().beginParse()
-        s0 s2 XCHG          	//  needBreak domain comment
-        PLDREF              	//  needBreak domain '20
-        CTOS                	//  needBreak domain comment
-        // 33: if (!needBreak)
-        s0 s2 XCHG          	//  comment domain needBreak
-      }>ELSE<{
-        NIP                 	//  comment domain needBreak
-      }>
-    }>                      	//  comment domain
-    // 38: return DeployNft { domain: domain.endCell().beginParse() }
-    NIP                     	//  domain
-    ENDC                    	//  '22
-    CTOS                    	//  '23
-  }>
-  // nft-collection.tolk:6  (note: function never called!)
-  saveData() PROC:<{          	//  content nftItemCode
-    // 7: contract.setData(beginCell().storeRef(content).storeRef(nftItemCode).endCell())
-    SWAP
-    NEWC                    	//  nftItemCode content '2
-    STREF                   	//  nftItemCode '2
-    STREF                   	//  '2
-    ENDC                    	//  '5
-    c4 POP                  	// 
   }>
   // nft-collection.tolk:22
   onInternalMessage() PROC:<{ 	//  in.body
@@ -471,7 +353,7 @@ PROGRAM{
           16 STU                 // store dataDepth
           256 STU                // store codeHash
           256 STU                // store dataHash
-          ONE HASHEXT_SHA256	//  'USlot2 '197 'USlot3 b '219
+          ONE HASHEXT_SHA256	//  'USlot2 '197 'USlot3 b '215
       256 STUR              	//  'USlot2 '197 'USlot3 b
       141 PUSHINT
       117 STUR              	//  'USlot2 '197 'USlot3 b
@@ -482,7 +364,7 @@ PROGRAM{
       STREF                 	//  b
       ENDC                  	//  deployMsg
       // 17: deployMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE)
-      64 PUSHINT            	//  deployMsg '247=64
+      64 PUSHINT            	//  deployMsg '253=64
       SENDRAWMSG            	// 
     }>                      	//  in.body
     // 66: throw 0xffff
@@ -538,12 +420,12 @@ PROGRAM{
         16 STU                 // store dataDepth
         256 STU                // store codeHash
         256 STU                // store dataHash
-        ONE HASHEXT_SHA256  	//  '41
-    NEWC                    	//  '41 '40
-    b{10000000000} STSLICECONST	//  '41 '40
-    256 STU                 	//  '40
+        ONE HASHEXT_SHA256  	//  '37
+    NEWC                    	//  '37 '36
+    b{10000000000} STSLICECONST	//  '37 '36
+    256 STU                 	//  '36
     ENDC
-    CTOS                    	//  '60
+    CTOS                    	//  '62
   }>
   // nft-collection.tolk:93:5
   get_nft_content() PROC:<{   	//  itemIndex individualNftContent
