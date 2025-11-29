@@ -71,7 +71,7 @@ fun onInternalMessage(in: InMessage) {
 struct CollectionDataReply {
     nextItemIndex: int
     collectionMetadata: cell
-    adminAddress: address
+    adminAddress: address?
 }
 
 get fun get_collection_data(): CollectionDataReply {
@@ -80,7 +80,7 @@ get fun get_collection_data(): CollectionDataReply {
     return {
         nextItemIndex: -1,
         collectionMetadata: storage.content,
-        adminAddress: createAddressNone(),
+        adminAddress: null,
     };
 }
 

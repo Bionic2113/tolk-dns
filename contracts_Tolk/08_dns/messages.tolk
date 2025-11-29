@@ -62,7 +62,7 @@ struct (0x557cea20) Refund {
 struct (0x5fcc3d14) Transfer {
     queryID: uint64
     newOwnerAddress: address
-    sendExcessesTo: address
+    sendExcessesTo: address?
     dontUseCustomPayload: int1
     forwardTonAmount: coins
     forwardPayload: RemainingBitsAndRefs
@@ -80,7 +80,7 @@ struct (0x44beae41) ProcessGovernanceDecision {
 
 struct ConfigValue {
     newOwnerAddress: address
-    sendExcessesTo: address
+    sendExcessesTo: address?
     dontUseCustomPayload: int1
     forwardTonAmount: coins
     forwardPayload: RemainingBitsAndRefs

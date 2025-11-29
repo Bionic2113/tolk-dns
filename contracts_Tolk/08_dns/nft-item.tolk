@@ -18,13 +18,13 @@ fun packAuction(maxBidAddress: address, maxBidAmount: coins, auctionEndTime: int
         .endCell();
 }
 
-fun unpackAuction(auction: cell?): (address, coins, uint64) {
+fun unpackAuction(auction: cell?): (address?, coins, uint64) {
     if (auction != null) {
         var ds: slice = auction.beginParse();
         return (ds.loadAddress(), ds.loadCoins(), ds.loadUint(64));
     }
 
-    return (createAddressNone(), 0, 0);
+    return (null, 0, 0);
 }
 
 fun auctionCheck(
@@ -56,7 +56,7 @@ fun auctionCheck(
         myBalance -= amountToSend;
     }
 
-    storage.ownerAddress = auction.0;
+    storage.ownerAddress = auction.0!;
     storage.auction = null;
     storage.save();
 }
@@ -65,7 +65,7 @@ fun transwerOwnership(
     originalForwardFee: coins,
     forwardTonAmount: coins,
     newOwnerAddress: address,
-    sendExcessesTo: address,
+    sendExcessesTo: address?,
     queryId: uint64,
     forwardPayload: RemainingBitsAndRefs,
     storage: NftItemStorage,
@@ -77,8 +77,8 @@ fun transwerOwnership(
     if (forwardTonAmount) {
         restAmount -= (forwardTonAmount + fwdFee);
     }
-    var needResponse = sendExcessesTo.isInternal();
-    if (needResponse) {
+
+    if (sendExcessesTo != null) {
         assert (sendExcessesTo.getWorkchain() == BASECHAIN) throw ERROR_INVALID_WORKCHAIN;
         restAmount -= fwdFee;
     }
@@ -94,14 +94,14 @@ fun transwerOwnership(
             value: forwardTonAmount,
             body: NotificationForNewOwner {
                 queryID: queryId,
-                oldOwnerAddress: storage.ownerAddress,
+                oldOwnerAddress: storage.ownerAddress!,
                 payload: forwardPayload,
             },
         });
         ownershipMsg.send(SEND_MODE_PAY_FEES_SEPARATELY);
     }
 
-    if (needResponse) {
+    if (sendExcessesTo != null) {
         val excessesMsg = createMessage({
             bounce: false,
             dest: sendExcessesTo,
@@ -145,7 +145,7 @@ fun onInternalMessage(in: InMessage) {
         val storage = NftItemStorage {
             itemIndex: uninitedSt.itemIndex,
             collectionAddress: uninitedSt.collectionAddress,
-            ownerAddress: createAddressNone(),
+            ownerAddress: null,
             content: beginCell().storeUint(0, 8).storeDict(createEmptyDict()).endCell(),
             domain: in.body.loadRef(),
             auction: packAuction(in.senderAddress, in.valueCoins, auctionEndTime),
@@ -180,7 +180,7 @@ fun onInternalMessage(in: InMessage) {
         AuctionCheck => {
             if (auctionComplete) {
                 assert (
-                    in.senderAddress == storage.ownerAddress
+                    in.senderAddress == storage.ownerAddress!
                 ) throw 406; // only owner can fill-up balance, prevent coins lost right after the auction
                 // if owner send bid right after auction he can restore it by transfer resonse message
                 storage.lastFillUpTime = blockchain.now();
@@ -201,7 +201,7 @@ fun onInternalMessage(in: InMessage) {
             if (amountToSend > 0) {
                 val msg = createMessage({
                     bounce: false,
-                    dest: auction.0,
+                    dest: auction.0!,
                     value: amountToSend,
                     body: Refund { queryID: blockchain.logicalTime() },
                 });
@@ -227,7 +227,7 @@ fun onInternalMessage(in: InMessage) {
         Transfer => {
             auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
 
-            assert (in.senderAddress == storage.ownerAddress) throw ERROR_NOT_FROM_OWNER;
+            assert (in.senderAddress == storage.ownerAddress!) throw ERROR_NOT_FROM_OWNER;
 
             // assert (msg.forwardPayload.remainingBitsCount()) throw ERROR_INCORRECT_FORWARD_PAYLOAD;
             transwerOwnership(
@@ -245,7 +245,7 @@ fun onInternalMessage(in: InMessage) {
         EditContent => {
             auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
 
-            assert (in.senderAddress == storage.ownerAddress) throw 410;
+            assert (in.senderAddress == storage.ownerAddress!) throw 410;
 
             storage.content = msg.ref;
             storage.lastFillUpTime = blockchain.now();
@@ -255,7 +255,7 @@ fun onInternalMessage(in: InMessage) {
         ChangeDNSRecord => {
             auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
 
-            assert (in.senderAddress == storage.ownerAddress) throw 411;
+            assert (in.senderAddress == storage.ownerAddress!) throw 411;
 
             var cs = storage.content.beginParse();
 
@@ -338,7 +338,7 @@ fun onInternalMessage(in: InMessage) {
             if (amountToSend > 0) {
                 val respMsg = createMessage({
                     bounce: false,
-                    dest: storage.ownerAddress,
+                    dest: storage.ownerAddress!,
                     value: amountToSend,
                     body: msg,
                 });
@@ -347,7 +347,7 @@ fun onInternalMessage(in: InMessage) {
             }
 
             val auctionEndTime = blockchain.now() + AUCTION_START_DURATION; // always 1 week
-            storage.ownerAddress = createAddressNone();
+            storage.ownerAddress = null;
             storage.auction = packAuction(in.senderAddress, in.valueCoins, auctionEndTime);
 
             storage.save();
@@ -405,7 +405,7 @@ get fun get_nft_data(): NftDataReply {
     };
 }
 
-get fun get_editor(): address {
+get fun get_editor(): address? {
     var loadingStorage = startLoadingNftItemStorage();
     val storage = loadingStorage.parseInitialized();
 
@@ -419,7 +419,7 @@ get fun get_domain(): slice {
     return storage.domain.beginParse();
 }
 
-get fun get_auction_info(): (address, coins, uint64) {
+get fun get_auction_info(): (address?, coins, uint64) {
     var loadingStorage = startLoadingNftItemStorage();
     val storage = loadingStorage.parseInitialized();
 

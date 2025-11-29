@@ -1,21 +1,21 @@
 {
   "gas": {
-    "DEPLOY nft": 16580,
-    "TRANSFER nft": 7254,
-    "GET static data": 4899,
-    "AUCTION change content": 7959,
-    "FILL UP item": 3144,
-    "CHANGE record": 8193,
-    "CONFIG fill up": 6533,
-    "CONFIG transfer item": 9278,
-    "BID item": 6336,
-    "BID item prolong": 6372,
-    "DEPLOY nft config": 18088
+    "DEPLOY nft": 15707,
+    "TRANSFER nft": 7361,
+    "GET static data": 4908,
+    "AUCTION change content": 7886,
+    "FILL UP item": 3156,
+    "CHANGE record": 8066,
+    "CONFIG fill up": 6506,
+    "CONFIG transfer item": 9144,
+    "BID item": 6368,
+    "BID item prolong": 6404,
+    "DEPLOY nft config": 17215
   },
   "codeSize": {
-    "nft-item bits": 12935,
+    "nft-item bits": 13055,
     "nft-item cells": 35,
-    "nft-collection bits": 4968,
+    "nft-collection bits": 4600,
     "nft-collection cells": 17
   }
 }

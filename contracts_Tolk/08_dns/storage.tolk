@@ -71,7 +71,7 @@ fun startLoadingNftItemStorage(): NftItemStorageMaybeNotInitialized {
 struct NftItemStorage {
     itemIndex: uint256
     collectionAddress: address
-    ownerAddress: address
+    ownerAddress: address?
     content: cell //Cell<SnakeString>
     domain: cell
     auction: cell?
