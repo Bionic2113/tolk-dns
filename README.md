@@ -19,7 +19,7 @@ In gas units, plus code side (bits / cells).
 
 | Operation                       | FunC       | Tolk       | **Gas savings** |
 |---------------------------------|------------|------------|-----------------|
-| DEPLOY nft                      | 23504      | 15707      | **-33.17%**     |
+| DEPLOY nft                      | 23504      | 15153      | **-35.53%**     |
 | TRANSFER nft                    | 8814       | 7361       | **-16.49%**     |
 | GET static data                 | 6731       | 4908       | **-27.08%**     |
 | AUCTION change content          | 10356      | 7886       | **-23.85%**     |
@@ -29,9 +29,9 @@ In gas units, plus code side (bits / cells).
 | CONFIG transfer item            | 10824      | 9144       | **-15.52%**     |
 | BID item                        | 8777       | 6368       | **-27.45%**     |
 | BID item prolong                | 8813       | 6404       | **-27.33%**     |
-| DEPLOY nft config               | 24943      | 17215      | **-30.98%**     |
+| DEPLOY nft config               | 24943      | 16661      | **-33.20%**     |
 | code size: nft-item             | 12490 / 43 | 13055 / 35 |                 |
-| code size: nft-collection       | 4863 / 29  | 4600 / 17  |                 |
+| code size: nft-collection       | 4863 / 29  | 4568 / 17  |                 |
 
 <br>
 

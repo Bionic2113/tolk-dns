@@ -68,7 +68,7 @@
   {
     "commitDesc": "tolk v1.2",
     "gas": {
-      "DEPLOY nft": 15707,
+      "DEPLOY nft": 15153,
       "TRANSFER nft": 7361,
       "GET static data": 4908,
       "AUCTION change content": 7886,
@@ -78,12 +78,12 @@
       "CONFIG transfer item": 9144,
       "BID item": 6368,
       "BID item prolong": 6404,
-      "DEPLOY nft config": 17215
+      "DEPLOY nft config": 16661
     },
     "codeSize": {
       "nft-item bits": 13055,
       "nft-item cells": 35,
-      "nft-collection bits": 4600,
+      "nft-collection bits": 4568,
       "nft-collection cells": 17
     }
   }

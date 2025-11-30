@@ -122,7 +122,7 @@ type AllowedMessageToNftItem =
     | ChangeDNSRecord
     | ProcessGovernanceDecision
     | DNSBalanceRelease
-    | RequestStaticData
+    | StaticDataRequest
 
 fun onInternalMessage(in: InMessage) {
     var loadingStorage = startLoadingNftItemStorage();
@@ -228,13 +228,11 @@ fun onInternalMessage(in: InMessage) {
 
             assert (in.senderAddress == storage.ownerAddress!) throw ERROR_NOT_FROM_OWNER;
 
-            // assert (msg.forwardPayload.remainingBitsCount()) throw ERROR_INCORRECT_FORWARD_PAYLOAD;
             transwerOwnership(
                 in.originalForwardFee,
                 msg.forwardTonAmount,
                 msg.newOwnerAddress,
                 msg.sendExcessesTo,
-                // as any_address,
                 msg.queryID,
                 msg.forwardPayload,
                 storage
@@ -297,7 +295,6 @@ fun onInternalMessage(in: InMessage) {
                     cfgVal.forwardTonAmount,
                     cfgVal.newOwnerAddress,
                     cfgVal.sendExcessesTo,
-                    // as any_address,
                     msg.queryID,
                     cfgVal.forwardPayload,
                     storage
@@ -353,7 +350,7 @@ fun onInternalMessage(in: InMessage) {
             return;
         }
 
-        RequestStaticData => {
+        StaticDataRequest => {
             auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
 
             val respondMsg = createMessage({
@@ -366,7 +363,7 @@ fun onInternalMessage(in: InMessage) {
                 // force the compiler not to create a ref, because it's guaranteed that with
                 // value (coins) = 0 it will nevertheless fit into a message cell directly
                 body: UnsafeBodyNoRef {
-                    forceInline: ResponseStaticData {
+                    forceInline: StaticDataResponse {
                         queryID: msg.queryID,
                         itemIndex: storage.itemIndex as uint256,
                         collectionAddress: storage.collectionAddress,

@@ -15,12 +15,12 @@ PROGRAM{
   // - calcDeployedNftItem (2 calls)
   // - DeployNft.load (1 call)
   // - deployNftItem (1 call)
-  // dns-utils.tolk:92
+  // dns-utils.tolk:64
   minPrice() PROC:<{          	//  domainBitsLength nowTime
-    // 93: var minPrice = minPriceConfig(domainBitsLength / 8)
+    // 65: var minPrice = minPriceConfig(domainBitsLength / 8)
     SWAP                    	//  nowTime domainBitsLength
     3 RSHIFT#               	//  nowTime '5
-    // 81: 4 => (1000, 100)
+    // 53: 4 => (1000, 100)
     DUP                     	//  nowTime '5 '5
     4 EQINT                 	//  nowTime '5 '11
     IF:<{                   	//  nowTime '5
@@ -28,7 +28,7 @@ PROGRAM{
       1000 PUSHINT          	//  nowTime '12=1000
       100 PUSHINT           	//  nowTime '8=1000 '9=100
     }>ELSE<{                	//  nowTime '5
-      // 82: 5 => (500, 50)
+      // 54: 5 => (500, 50)
       DUP                   	//  nowTime '5 '5
       5 EQINT               	//  nowTime '5 '15
       IF:<{                 	//  nowTime '5
@@ -36,7 +36,7 @@ PROGRAM{
         500 PUSHINT         	//  nowTime '16=500
         50 PUSHINT          	//  nowTime '8=500 '9=50
       }>ELSE<{              	//  nowTime '5
-        // 83: 6 => (400, 40)
+        // 55: 6 => (400, 40)
         DUP                 	//  nowTime '5 '5
         6 EQINT             	//  nowTime '5 '19
         IF:<{               	//  nowTime '5
@@ -44,7 +44,7 @@ PROGRAM{
           400 PUSHINT       	//  nowTime '20=400
           40 PUSHINT        	//  nowTime '8=400 '9=40
         }>ELSE<{            	//  nowTime '5
-          // 84: 7 => (300, 30)
+          // 56: 7 => (300, 30)
           DUP               	//  nowTime '5 '5
           7 EQINT           	//  nowTime '5 '23
           IF:<{             	//  nowTime '5
@@ -52,7 +52,7 @@ PROGRAM{
             300 PUSHINT     	//  nowTime '24=300
             30 PUSHINT      	//  nowTime '8=300 '9=30
           }>ELSE<{          	//  nowTime '5
-            // 85: 8 => (200, 20)
+            // 57: 8 => (200, 20)
             DUP             	//  nowTime '5 '5
             8 EQINT         	//  nowTime '5 '27
             IF:<{           	//  nowTime '5
@@ -60,7 +60,7 @@ PROGRAM{
               200 PUSHINT   	//  nowTime '28=200
               20 PUSHINT    	//  nowTime '8=200 '9=20
             }>ELSE<{        	//  nowTime '5
-              // 86: 9 => (100, 10)
+              // 58: 9 => (100, 10)
               DUP           	//  nowTime '5 '5
               9 EQINT       	//  nowTime '5 '31
               IF:<{         	//  nowTime '5
@@ -68,13 +68,13 @@ PROGRAM{
                 100 PUSHINT 	//  nowTime '32=100
                 10 PUSHINT  	//  nowTime '8=100 '9=10
               }>ELSE<{      	//  nowTime '5
-                // 87: 10 => (50, 5)
+                // 59: 10 => (50, 5)
                 10 EQINT    	//  nowTime '35
                 IF:<{       	//  nowTime
                   50 PUSHINT	//  nowTime '36=50
                   5 PUSHINT 	//  nowTime '8=50 '9=5
                 }>ELSE<{    	//  nowTime
-                  // 88: else => (10, 1)
+                  // 60: else => (10, 1)
                   10 PUSHINT	//  nowTime '38=10
                   1 PUSHINT 	//  nowTime '8=10 '9=1
                 }>
@@ -84,31 +84,31 @@ PROGRAM{
         }>
       }>
     }>                      	//  nowTime minPrice.0 minPrice.1
-    // 95: minPrice.0 *= ONE_TON
+    // 67: minPrice.0 *= ONE_TON
     SWAP
     1000000000 PUSHINT      	//  nowTime minPrice.1 minPrice.0 '40=1000000000
     MUL                     	//  nowTime minPrice.1 minPrice.0
-    // 96: minPrice.1 *= ONE_TON
+    // 68: minPrice.1 *= ONE_TON
     SWAP
     1000000000 PUSHINT      	//  nowTime minPrice.0 minPrice.1 '42=1000000000
     MUL                     	//  nowTime minPrice.0 minPrice.1
-    // 98: val seconds = nowTime - AUCTION_START_TIME
+    // 70: val seconds = nowTime - AUCTION_START_TIME
     s0 s2 XCHG
     1659171600 PUSHINT      	//  minPrice.1 minPrice.0 nowTime '45=1659171600
     SUB                     	//  minPrice.1 minPrice.0 seconds
-    // 99: val months = seconds / ONE_MONTH
+    // 71: val months = seconds / ONE_MONTH
     2592000 PUSHINT         	//  minPrice.1 minPrice.0 seconds '48=2592000
     DIV                     	//  minPrice.1 minPrice.0 months
-    // 100: if (months > 21)
+    // 72: if (months > 21)
     DUP                     	//  minPrice.1 minPrice.0 months months
     21 GTINT                	//  minPrice.1 minPrice.0 months '51
     IFJMP:<{                	//  minPrice.1 minPrice.0 months
       2DROP                 	//  minPrice.1
     }>                      	//  minPrice.1 minPrice.0 months
     1 2 BLKDROP2            	//  minPrice.0 months
-    // 104: repeat (months)
+    // 76: repeat (months)
     REPEAT:<{               	//  minPrice.0
-      // 105: minPrice.0 = minPrice.0 * 90 / 100
+      // 77: minPrice.0 = minPrice.0 * 90 / 100
       90 MULCONST           	//  '53
       100 PUSHINT           	//  '53 '54=100
       DIV                   	//  minPrice.0
@@ -203,28 +203,28 @@ PROGRAM{
       202 THROWIF           	//  now_time storage len
       // 43: assert (checkDomainString(storage.domain)) throw 203
       OVER                  	//  now_time storage len domain
-      // 19: var i: int = 0
+      // 14: var i: int = 0
       0 PUSHINT             	//  now_time storage len domain i=0
-      // 20: var len: int = domain.remainingBitsCount()
+      // 15: var len: int = domain.remainingBitsCount()
       OVER                  	//  now_time storage len domain i=0 domain
       SBITS                 	//  now_time storage len domain i=0 len
-      // 22: do
-      // ...37: while (!needBreak)
+      // 17: do
+      // ...32: while (!needBreak)
       UNTIL:<{
         2DUP                	//  now_time storage len domain i len i len
-        // 23: needBreak = i == len
+        // 18: needBreak = i == len
         EQUAL               	//  now_time storage len domain i len needBreak
-        // 24: if (!needBreak)
+        // 19: if (!needBreak)
         DUP                 	//  now_time storage len domain i len needBreak needBreak
         IFNOT:<{            	//  now_time storage len domain i len needBreak
-          // 25: var char: int = domain.loadUint(8)
+          // 20: var char: int = domain.loadUint(8)
           DROP              	//  now_time storage len domain i len
           s0 s2 XCHG        	//  now_time storage len len i domain
           8 LDU             	//  now_time storage len len i char domain
-          // 27: var isHyphen: bool = (char == 45)
+          // 22: var isHyphen: bool = (char == 45)
           OVER              	//  now_time storage len len i char domain char
           45 EQINT          	//  now_time storage len len i char domain isHyphen
-          // 28: var validChar: bool = (isHyphen & (i > 0) & (i < len - 8)) |
+          // 23: var validChar: bool = (isHyphen & (i > 0) & (i < len - 8)) |
           s3 PUSH           	//  now_time storage len len i char domain isHyphen i
           0 GTINT           	//  now_time storage len len i char domain isHyphen '89
           AND               	//  now_time storage len len i char domain '90
@@ -233,42 +233,42 @@ PROGRAM{
           s4 PUSH           	//  now_time storage len len i char domain '90 '92 i
           GREATER           	//  now_time storage len len i char domain '90 '93
           AND               	//  now_time storage len len i char domain '94
-          // 29: ((char >= 48) & (char <= 57)) |
+          // 24: ((char >= 48) & (char <= 57)) |
           s2 PUSH           	//  now_time storage len len i char domain '94 char
           47 GTINT          	//  now_time storage len len i char domain '94 '96
           s3 PUSH           	//  now_time storage len len i char domain '94 '96 char
           58 LESSINT        	//  now_time storage len len i char domain '94 '96 '98
           AND               	//  now_time storage len len i char domain '94 '99
-          // 28: var validChar: bool = (isHyphen & (i > 0) & (i < len - 8)) |
-          // ...29: ((char >= 48) & (char <= 57))
+          // 23: var validChar: bool = (isHyphen & (i > 0) & (i < len - 8)) |
+          // ...24: ((char >= 48) & (char <= 57))
           OR                	//  now_time storage len len i char domain '100
-          // 30: ((char >= 97) & (char <= 122)); // '-' or 0-9 or a-z
+          // 25: ((char >= 97) & (char <= 122)); // '-' or 0-9 or a-z
           s2 PUSH           	//  now_time storage len len i char domain '100 char
           96 GTINT          	//  now_time storage len len i char domain '100 '102
           s0 s3 XCHG        	//  now_time storage len len i '102 domain '100 char
           123 LESSINT       	//  now_time storage len len i '102 domain '100 '104
           s1 s3 XCHG        	//  now_time storage len len i '100 domain '102 '104
           AND               	//  now_time storage len len i '100 domain '105
-          // 28: var validChar: bool = (isHyphen & (i > 0) & (i < len - 8)) |
-          // ...30: ((char >= 97) & (char <= 122))
+          // 23: var validChar: bool = (isHyphen & (i > 0) & (i < len - 8)) |
+          // ...25: ((char >= 97) & (char <= 122))
           s1 s2 XCHG        	//  now_time storage len len i domain '100 '105
           OR                	//  now_time storage len len i domain validChar
-          // 32: needBreak = !validChar
+          // 27: needBreak = !validChar
           NOT               	//  now_time storage len len i domain needBreak
-          // 33: if (!needBreak)
+          // 28: if (!needBreak)
           DUP               	//  now_time storage len len i domain needBreak needBreak
           IFNOT:<{          	//  now_time storage len len i domain needBreak
-            // 34: i += 8
+            // 29: i += 8
             s0 s2 XCHG      	//  now_time storage len len needBreak domain i
             8 ADDCONST      	//  now_time storage len len needBreak domain i
-            // 33: if (!needBreak)
+            // 28: if (!needBreak)
             s0 s2 XCHG      	//  now_time storage len len i domain needBreak
           }>                	//  now_time storage len len i domain needBreak
-          // 24: if (!needBreak)
+          // 19: if (!needBreak)
           s1 s3 XCHG        	//  now_time storage len domain i len needBreak
         }>                  	//  now_time storage len domain i len '111
       }>                    	//  now_time storage len domain i len
-      // 38: return i == len
+      // 33: return i == len
       s2 POP                	//  now_time storage len len i
       EQUAL                 	//  now_time storage len '71
       // 43: assert (checkDomainString(storage.domain)) throw 203
@@ -304,7 +304,7 @@ PROGRAM{
         // 48: if (config != null)
         DROP                	//  storage itemIndex
       }>
-      // 63: return NftCollectionStorage.fromCell(contract.getData())
+      // 59: return NftCollectionStorage.fromCell(contract.getData())
       c4 PUSH               	//  storage itemIndex '138
       // 53: val nftStorage = lazy NftCollectionStorage.load()
       CTOS                  	//  storage itemIndex lazyS
@@ -322,7 +322,7 @@ PROGRAM{
       PLDREF                	//  nftContent.sender itemIndex nftContent.domain nftStorage.nftItemCode
       // 13: dest: calcDeployedNftItem(itemIndex, contract.getAddress(), nftItemCode)
       MYADDR                	//  nftContent.sender emptyNftItemStorage.itemIndex nftContent.domain nftStorage.nftItemCode emptyNftItemStorage.collectionAddress
-      // 73: return { stateInit: { code: nftItemCode, data: emptyNftItemStorage.toCell() } }
+      // 69: return { stateInit: { code: nftItemCode, data: emptyNftItemStorage.toCell() } }
       s0 s3 XCHG
       NEWC                  	//  nftContent.sender emptyNftItemStorage.collectionAddress nftContent.domain nftStorage.nftItemCode emptyNftItemStorage.itemIndex b
       256 STU               	//  nftContent.sender emptyNftItemStorage.collectionAddress nftContent.domain nftStorage.nftItemCode b
@@ -359,6 +359,7 @@ PROGRAM{
   }>
   // nft-collection.tolk:74
   get_collection_data() PROC:<{	// 
+    // 59: return NftCollectionStorage.fromCell(contract.getData())
     c4 PUSH                 	//  '3
     // 75: val storage = lazy NftCollectionStorage.load()
     CTOS                    	//  lazyS
@@ -373,7 +374,7 @@ PROGRAM{
   }>
   // nft-collection.tolk:84
   get_nft_address_by_index() PROC:<{	//  itemIndex
-    // 63: return NftCollectionStorage.fromCell(contract.getData())
+    // 59: return NftCollectionStorage.fromCell(contract.getData())
     c4 PUSH                 	//  itemIndex '4
     // 85: val storage = lazy NftCollectionStorage.load()
     CTOS                    	//  itemIndex lazyS
@@ -382,7 +383,7 @@ PROGRAM{
     NIP                     	//  itemIndex lazyS
     PLDREF                  	//  itemIndex storage.nftItemCode
     MYADDR                  	//  emptyNftItemStorage.itemIndex storage.nftItemCode emptyNftItemStorage.collectionAddress
-    // 73: return { stateInit: { code: nftItemCode, data: emptyNftItemStorage.toCell() } }
+    // 69: return { stateInit: { code: nftItemCode, data: emptyNftItemStorage.toCell() } }
     s0 s2 XCHG
     NEWC                    	//  emptyNftItemStorage.collectionAddress storage.nftItemCode emptyNftItemStorage.itemIndex b
     256 STU                 	//  emptyNftItemStorage.collectionAddress storage.nftItemCode b
@@ -449,30 +450,30 @@ PROGRAM{
     }>                      	//  subdomain startsWithZeroByte
     // 110: val topSubdomainBits: int = topDomainBits(subdomain)
     OVER                    	//  subdomain startsWithZeroByte domain
-    // 65: var i: int = 0
+    // 37: var i: int = 0
     0 PUSHINT               	//  subdomain startsWithZeroByte domain i=0
-    // 68: do
-    // ...73: while (!needBreak)
+    // 40: do
+    // ...45: while (!needBreak)
     UNTIL:<{
-      // 69: needBreak = domain.loadUint(8) == 0
+      // 41: needBreak = domain.loadUint(8) == 0
       SWAP                  	//  subdomain startsWithZeroByte i domain
       8 LDU                 	//  subdomain startsWithZeroByte i '36 domain
       SWAP                  	//  subdomain startsWithZeroByte i domain '36
       0 EQINT               	//  subdomain startsWithZeroByte i domain needBreak
-      // 70: if (!needBreak)
+      // 42: if (!needBreak)
       DUP                   	//  subdomain startsWithZeroByte i domain needBreak needBreak
       IFNOT:<{              	//  subdomain startsWithZeroByte i domain needBreak
-        // 71: i += 8
+        // 43: i += 8
         s0 s2 XCHG          	//  subdomain startsWithZeroByte needBreak domain i
         8 ADDCONST          	//  subdomain startsWithZeroByte needBreak domain i
-        // 70: if (!needBreak)
+        // 42: if (!needBreak)
         s0 s2 XCHG          	//  subdomain startsWithZeroByte i domain needBreak
       }>                    	//  subdomain startsWithZeroByte i domain '42
-      // 68: do
-      // ...73: while (!needBreak)
+      // 40: do
+      // ...45: while (!needBreak)
       s1 s2 XCHG            	//  subdomain startsWithZeroByte domain i '42
     }>                      	//  subdomain startsWithZeroByte domain i
-    // 75: assert (i != 0) throw 201
+    // 47: assert (i != 0) throw 201
     NIP                     	//  subdomain startsWithZeroByte i
     DUP                     	//  subdomain startsWithZeroByte i i
     201 THROWIFNOT          	//  subdomain startsWithZeroByte topSubdomainBits
@@ -487,14 +488,12 @@ PROGRAM{
     CONDSEL                 	//  topSubdomainBits item_index '51
     s1 s2 XCHG              	//  item_index topSubdomainBits '51
     ADD                     	//  item_index '54
-    // 115: beginCell().storeUint(DNS_NEXT_RESOLVER_PREFIX, 16).storeAddress(get_nft_address_by_index(item_index))
-    NEWC                    	//  item_index '54 '56
-    x{ba93} STSLICECONST    	//  item_index '54 '56
-    s0 s2 XCHG              	//  '56 '54 item_index
-    get_nft_address_by_index() CALLDICT	//  '56 '54 '59
-    ROT                     	//  '54 '59 '56
-    STSTDADDR               	//  '54 '56
-    // 116: .endCell()
-    ENDC                    	//  '54 '61
+    // 115: ResolveResponse { next: get_nft_address_by_index(item_index) }.toCell()
+    SWAP                    	//  '54 item_index
+    get_nft_address_by_index() CALLDICT	//  '54 '55
+    NEWC                    	//  '54 '55 b
+    x{ba93} STSLICECONST    	//  '54 '55 b
+    STSTDADDR               	//  '54 b
+    ENDC                    	//  '54 '60
   }>
 }END>c

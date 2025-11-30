@@ -33,7 +33,7 @@ fun onInternalMessage(in: InMessage) {
             assert (now_time > AUCTION_START_TIME) throw 199;
 
             in.body.skipBits(32);
-            val storage = DeployNft.load(in.body); // DeployNft { domain: readDomainFromComment(in.body) };
+            val storage = DeployNft.load(in.body);
 
             val len: int = storage.domain.remainingBitsCount();
 
@@ -112,7 +112,6 @@ get fun dnsresolve(subdomain: slice, category: int): (int, cell?) {
 
     return (
         topSubdomainBits + (startsWithZeroByte ? 8 : 0),
-        beginCell().storeUint(DNS_NEXT_RESOLVER_PREFIX, 16).storeAddress(get_nft_address_by_index(item_index))
-            .endCell()
+        ResolveResponse { next: get_nft_address_by_index(item_index) }.toCell()
     );
 }

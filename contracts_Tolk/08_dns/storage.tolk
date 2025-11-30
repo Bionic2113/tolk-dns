@@ -1,12 +1,8 @@
 struct NftCollectionStorage {
-    content: cell //Cell<CollectionContent>
+    content: cell
     nftItemCode: cell
 }
 
-// struct CollectionContent {
-//     collectionMetadata: cell
-//     commonContent: Cell<SnakeString>
-// }
 // actual storage of an NFT item is tricky: it's either initialized or not;
 // after NFT has been inited, it's represented as `NftItemStorage`;
 // before initialization, it has only itemIndex and collectionAddress: `NftItemStorageNotInitialized`;
@@ -88,4 +84,12 @@ struct ContentNFT {
 
 struct Domain {
     domain: slice
+}
+
+struct ConfigValue {
+    newOwnerAddress: address
+    sendExcessesTo: address?
+    dontUseCustomPayload: int1
+    forwardTonAmount: coins
+    forwardPayload: RemainingBitsAndRefs
 }

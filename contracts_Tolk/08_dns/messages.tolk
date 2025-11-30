@@ -69,24 +69,20 @@ struct (0x44beae41) ProcessGovernanceDecision {
     queryID: uint64
 }
 
-struct ConfigValue {
-    newOwnerAddress: address
-    sendExcessesTo: address?
-    dontUseCustomPayload: int1
-    forwardTonAmount: coins
-    forwardPayload: RemainingBitsAndRefs
-}
-
 struct (0x4ed14b65) DNSBalanceRelease {
     queryID: uint64
 }
 
-struct (0x2fcb26a2) RequestStaticData {
+struct (0x2fcb26a2) StaticDataRequest {
     queryID: uint64
 }
 
-struct (0x8b771735) ResponseStaticData {
+struct (0x8b771735) StaticDataResponse {
     queryID: uint64
     itemIndex: uint256
     collectionAddress: address
+}
+
+struct (0xba93) ResolveResponse {
+    next: address
 }
