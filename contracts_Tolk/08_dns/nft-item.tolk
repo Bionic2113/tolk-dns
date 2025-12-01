@@ -26,6 +26,7 @@ fun unpackAuction(auction: cell?): (address?, coins, uint64) {
     return (null, 0, 0);
 }
 
+@inline_ref
 fun auctionCheck(
     mutate storage: NftItemStorage,
     msgBalance: coins,

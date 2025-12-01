@@ -304,7 +304,7 @@ PROGRAM{
         // 48: if (config != null)
         DROP                	//  storage itemIndex
       }>
-      // 63: return NftCollectionStorage.fromCell(contract.getData())
+      // 59: return NftCollectionStorage.fromCell(contract.getData())
       c4 PUSH               	//  storage itemIndex '138
       // 53: val nftStorage = lazy NftCollectionStorage.load()
       CTOS                  	//  storage itemIndex lazyS
@@ -322,7 +322,7 @@ PROGRAM{
       PLDREF                	//  nftContent.sender itemIndex nftContent.domain nftStorage.nftItemCode
       // 13: dest: calcDeployedNftItem(itemIndex, contract.getAddress(), nftItemCode)
       MYADDR                	//  nftContent.sender emptyNftItemStorage.itemIndex nftContent.domain nftStorage.nftItemCode emptyNftItemStorage.collectionAddress
-      // 73: return { stateInit: { code: nftItemCode, data: emptyNftItemStorage.toCell() } }
+      // 69: return { stateInit: { code: nftItemCode, data: emptyNftItemStorage.toCell() } }
       s0 s3 XCHG
       NEWC                  	//  nftContent.sender emptyNftItemStorage.collectionAddress nftContent.domain nftStorage.nftItemCode emptyNftItemStorage.itemIndex b
       256 STU               	//  nftContent.sender emptyNftItemStorage.collectionAddress nftContent.domain nftStorage.nftItemCode b
@@ -359,6 +359,7 @@ PROGRAM{
   }>
   // nft-collection.tolk:74
   get_collection_data() PROC:<{	// 
+    // 59: return NftCollectionStorage.fromCell(contract.getData())
     c4 PUSH                 	//  '3
     // 75: val storage = lazy NftCollectionStorage.load()
     CTOS                    	//  lazyS
@@ -373,7 +374,7 @@ PROGRAM{
   }>
   // nft-collection.tolk:84
   get_nft_address_by_index() PROC:<{	//  itemIndex
-    // 63: return NftCollectionStorage.fromCell(contract.getData())
+    // 59: return NftCollectionStorage.fromCell(contract.getData())
     c4 PUSH                 	//  itemIndex '4
     // 85: val storage = lazy NftCollectionStorage.load()
     CTOS                    	//  itemIndex lazyS
@@ -382,7 +383,7 @@ PROGRAM{
     NIP                     	//  itemIndex lazyS
     PLDREF                  	//  itemIndex storage.nftItemCode
     MYADDR                  	//  emptyNftItemStorage.itemIndex storage.nftItemCode emptyNftItemStorage.collectionAddress
-    // 73: return { stateInit: { code: nftItemCode, data: emptyNftItemStorage.toCell() } }
+    // 69: return { stateInit: { code: nftItemCode, data: emptyNftItemStorage.toCell() } }
     s0 s2 XCHG
     NEWC                    	//  emptyNftItemStorage.collectionAddress storage.nftItemCode emptyNftItemStorage.itemIndex b
     256 STU                 	//  emptyNftItemStorage.collectionAddress storage.nftItemCode b
@@ -487,14 +488,12 @@ PROGRAM{
     CONDSEL                 	//  topSubdomainBits item_index '51
     s1 s2 XCHG              	//  item_index topSubdomainBits '51
     ADD                     	//  item_index '54
-    // 115: beginCell().storeUint(DNS_NEXT_RESOLVER_PREFIX, 16).storeAddress(get_nft_address_by_index(item_index))
-    NEWC                    	//  item_index '54 '56
-    x{ba93} STSLICECONST    	//  item_index '54 '56
-    s0 s2 XCHG              	//  '56 '54 item_index
-    get_nft_address_by_index() CALLDICT	//  '56 '54 '59
-    ROT                     	//  '54 '59 '56
-    STSTDADDR               	//  '54 '56
-    // 116: .endCell()
-    ENDC                    	//  '54 '61
+    // 115: ResolveResponse { next: get_nft_address_by_index(item_index) }.toCell()
+    SWAP                    	//  '54 item_index
+    get_nft_address_by_index() CALLDICT	//  '54 '55
+    NEWC                    	//  '54 '55 b
+    x{ba93} STSLICECONST    	//  '54 '55 b
+    STSTDADDR               	//  '54 b
+    ENDC                    	//  '54 '60
   }>
 }END>c
