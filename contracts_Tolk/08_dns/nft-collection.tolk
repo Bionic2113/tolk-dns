@@ -17,7 +17,7 @@ fun deployNftItem(itemIndex: int, nftItemCode: cell, nftContent: ContentNFT) {
     deployMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
 }
 
-type AllowedMessageToDNS = DeployNftMsg | JustFillUp
+type AllowedMessageToDNS = DeployNft | JustFillUp
 
 fun onInternalMessage(in: InMessage) {
     assert (!in.body.isEmpty()) throw 0xFFFF;
@@ -28,21 +28,20 @@ fun onInternalMessage(in: InMessage) {
             return;
         }
 
-        DeployNftMsg => {
+        DeployNft => {
             val now_time = blockchain.now();
             assert (now_time > AUCTION_START_TIME) throw 199;
 
             in.body.skipBits(32);
-            val storage = DeployNft.load(in.body);
-
-            val len: int = storage.domain.remainingBitsCount();
+            // val storage = DeployNft.load(in.body);
+            val len: int = msg.domain.remainingBitsCount();
 
             assert (len > 3 * 8) throw 200; // minimum 4 characters
             assert (len <= 126 * 8) throw 201; // maximum 126 characters
             assert (mod(len, 8) == 0) throw 202;
-            assert (checkDomainString(storage.domain)) throw 203;
+            assert (checkDomainString(msg.domain)) throw 203;
             assert (in.valueCoins >= minPrice(len, now_time)) throw 204;
-            val itemIndex: int = storage.domain.hash();
+            val itemIndex: int = msg.domain.hash();
 
             val config: cell? = blockchain.configParam(DNS_CONFIG_ID);
             if (config != null) {
@@ -53,7 +52,7 @@ fun onInternalMessage(in: InMessage) {
             val nftStorage = lazy NftCollectionStorage.load();
             val nftContent = ContentNFT {
                 sender: in.senderAddress,
-                domain: Domain { domain: storage.domain }.toCell(),
+                domain: Domain { domain: msg.domain }.toCell(),
             };
 
             deployNftItem(itemIndex, nftStorage.nftItemCode, nftContent);

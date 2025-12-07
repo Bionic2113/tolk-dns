@@ -1,16 +1,14 @@
-import "storage"
-
 struct (0x370fec51) JustFillUp {
     queryID: uint64
 }
 
-struct (0x00000000) DeployNftMsg {}
+type DomainSlice = slice
 
 struct (0x00000000) DeployNft {
-    domain: slice
+    domain: DomainSlice
 }
 
-fun DeployNft.load(comment: slice) {
+fun DomainSlice.unpackFromSlice(mutate comment: slice) {
     var needBreak: bool = false;
     var domain: builder = beginCell();
 
@@ -26,7 +24,7 @@ fun DeployNft.load(comment: slice) {
         }
     } while (!needBreak);
 
-    return DeployNft { domain: domain.endCell().beginParse() };
+    return domain.toSlice();
 }
 
 struct (0x00000000) AuctionCheck {}

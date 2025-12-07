@@ -12,8 +12,9 @@ PROGRAM{
   80697 DECLMETHOD get_auction_info()
   91481 DECLMETHOD get_last_fill_up_time()
   123660 DECLMETHOD dnsresolve()
-  // 7 functions inlined in-place:
+  // 8 functions inlined in-place:
   // - minPriceConfig (1 call)
+  // - DomainSlice.unpackFromSlice (0 calls)
   // - NftItemStorageMaybeNotInitialized.isInitialized (2 calls)
   // - NftItemStorageMaybeNotInitialized.parseNotInitialized (2 calls)
   // - NftItemStorageMaybeNotInitialized.parseInitialized (7 calls)

@@ -11,9 +11,9 @@ PROGRAM{
   // - checkDomainString (1 call)
   // - topDomainBits (1 call)
   // - minPriceConfig (1 call)
+  // - DomainSlice.unpackFromSlice (0 calls)
   // - NftCollectionStorage.load (3 calls)
   // - calcDeployedNftItem (2 calls)
-  // - DeployNft.load (1 call)
   // - deployNftItem (1 call)
   // dns-utils.tolk:64
   minPrice() PROC:<{          	//  domainBitsLength nowTime
@@ -124,200 +124,195 @@ PROGRAM{
     OVER                    	//  in.body '4=65535 in.body
     SEMPTY                  	//  in.body '4=65535 '5
     NOT                     	//  in.body '4=65535 '6
-    THROWANYIFNOT           	//  in.body
-    // 25: val msg = lazy AllowedMessageToDNS.fromSlice(in.body)
-    DUP                     	//  in.body lazyS
+    THROWANYIFNOT           	//  lazyS
     // 26: match (msg)
-    x{370fec51} SDBEGINSQ   	//  in.body lazyS '13
-    IFJMP:<{                	//  in.body lazyS
-      2DROP                 	// 
-    }>                      	//  in.body lazyS
-    x{00000000} SDBEGINSQ   	//  in.body lazyS '13
-    NIP                     	//  in.body '13
-    IFJMP:<{                	//  in.body
+    x{370fec51} SDBEGINSQ   	//  lazyS '13
+    IFJMP:<{                	//  lazyS
+      // 28: return
+      DROP                  	// 
+    }>                      	//  lazyS
+    // 26: match (msg)
+    x{00000000} SDBEGINSQ   	//  lazyS '13
+    IFJMP:<{                	//  lazyS
       // 32: val now_time = blockchain.now()
-      NOW                   	//  in.body now_time
+      NOW                   	//  lazyS now_time
       // 33: assert (now_time > AUCTION_START_TIME) throw 199
       DUP
-      1659171600 PUSHINT    	//  in.body now_time now_time '21=1659171600
-      GREATER               	//  in.body now_time '22
-      199 THROWIFNOT        	//  in.body now_time
-      // 35: in.body.skipBits(32)
-      SWAP                  	//  now_time in.body
-      32 LDU
-      NIP                   	//  now_time comment
-      // 15: var domain: builder = beginCell()
-      NEWC                  	//  now_time comment domain
-      // 17: do
-      // ...27: while (!needBreak)
+      1659171600 PUSHINT    	//  lazyS now_time now_time '21=1659171600
+      GREATER               	//  lazyS now_time '22
+      199 THROWIFNOT        	//  comment now_time
+      // 13: var domain: builder = beginCell()
+      NEWC                  	//  comment now_time domain
+      // 15: do
+      // ...25: while (!needBreak)
       UNTIL:<{
-        // 18: domain.storeSlice(comment.loadBits(comment.remainingBitsCount()))
-        OVER                	//  now_time comment domain comment
-        SBITS               	//  now_time comment domain '32
-        s1 s2 XCHG          	//  now_time domain comment '32
-        LDSLICEX            	//  now_time domain '35 comment
-        s0 s2 XCHG          	//  now_time comment '35 domain
-        STSLICE             	//  now_time comment domain
-        // 20: val refsLen = comment.remainingRefsCount()
-        OVER                	//  now_time comment domain comment
-        SREFS               	//  now_time comment domain refsLen
-        // 21: needBreak = refsLen == 0
-        DUP                 	//  now_time comment domain refsLen refsLen
-        0 EQINT             	//  now_time comment domain refsLen needBreak
-        // 23: if (!needBreak)
-        DUP                 	//  now_time comment domain refsLen needBreak needBreak
-        IFNOT:<{            	//  now_time comment domain refsLen needBreak
-          // 24: assert (refsLen == 1) throw 202
-          SWAP              	//  now_time comment domain needBreak refsLen
-          1 EQINT           	//  now_time comment domain needBreak '43
-          202 THROWIFNOT    	//  now_time comment domain needBreak
-          // 25: comment = comment.loadRef().beginParse()
-          s0 s2 XCHG        	//  now_time needBreak domain comment
-          PLDREF            	//  now_time needBreak domain '46
-          CTOS              	//  now_time needBreak domain comment
-          // 23: if (!needBreak)
-          s0 s2 XCHG        	//  now_time comment domain needBreak
+        // 16: domain.storeSlice(comment.loadBits(comment.remainingBitsCount()))
+        s2 PUSH             	//  comment now_time domain comment
+        SBITS               	//  comment now_time domain '32
+        s1 s3 XCHG          	//  domain now_time comment '32
+        LDSLICEX            	//  domain now_time '35 comment
+        s0 s3 XCHG          	//  comment now_time '35 domain
+        STSLICE             	//  comment now_time domain
+        // 18: val refsLen = comment.remainingRefsCount()
+        s2 PUSH             	//  comment now_time domain comment
+        SREFS               	//  comment now_time domain refsLen
+        // 19: needBreak = refsLen == 0
+        DUP                 	//  comment now_time domain refsLen refsLen
+        0 EQINT             	//  comment now_time domain refsLen needBreak
+        // 21: if (!needBreak)
+        DUP                 	//  comment now_time domain refsLen needBreak needBreak
+        IFNOT:<{            	//  comment now_time domain refsLen needBreak
+          // 22: assert (refsLen == 1) throw 202
+          SWAP              	//  comment now_time domain needBreak refsLen
+          1 EQINT           	//  comment now_time domain needBreak '43
+          202 THROWIFNOT    	//  comment now_time domain needBreak
+          // 23: comment = comment.loadRef().beginParse()
+          s0 s3 XCHG        	//  needBreak now_time domain comment
+          PLDREF            	//  needBreak now_time domain '46
+          CTOS              	//  needBreak now_time domain comment
+          // 21: if (!needBreak)
+          s0 s3 XCHG        	//  comment now_time domain needBreak
         }>ELSE<{
-          NIP               	//  now_time comment domain needBreak
-        }>                  	//  now_time comment domain '49
-      }>                    	//  now_time comment domain
-      // 29: return DeployNft { domain: domain.endCell().beginParse() }
-      NIP                   	//  now_time domain
-      BTOS                  	//  now_time storage
-      // 38: val len: int = storage.domain.remainingBitsCount()
-      DUP                   	//  now_time storage storage
-      SBITS                 	//  now_time storage len
-      // 40: assert (len > 3 * 8) throw 200; // minimum 4 characters
-      DUP                   	//  now_time storage len len
-      24 GTINT              	//  now_time storage len '58
-      200 THROWIFNOT        	//  now_time storage len
-      // 41: assert (len <= 126 * 8) throw 201; // maximum 126 characters
+          NIP               	//  comment now_time domain needBreak
+        }>                  	//  comment now_time domain '49
+      }>                    	//  comment now_time domain
+      1 2 BLKDROP2          	//  now_time domain
+      // 27: return domain.toSlice()
+      BTOS                  	//  now_time msg.USlot1
+      // 37: val len: int = msg.domain.remainingBitsCount()
+      DUP                   	//  now_time msg.USlot1 msg.USlot1
+      SBITS                 	//  now_time msg.USlot1 len
+      // 39: assert (len > 3 * 8) throw 200; // minimum 4 characters
+      DUP                   	//  now_time msg.USlot1 len len
+      24 GTINT              	//  now_time msg.USlot1 len '57
+      200 THROWIFNOT        	//  now_time msg.USlot1 len
+      // 40: assert (len <= 126 * 8) throw 201; // maximum 126 characters
       DUP
-      1008 PUSHINT          	//  now_time storage len len '62
-      LEQ                   	//  now_time storage len '63
-      201 THROWIFNOT        	//  now_time storage len
-      // 42: assert (mod(len, 8) == 0) throw 202
+      1008 PUSHINT          	//  now_time msg.USlot1 len len '61
+      LEQ                   	//  now_time msg.USlot1 len '62
+      201 THROWIFNOT        	//  now_time msg.USlot1 len
+      // 41: assert (mod(len, 8) == 0) throw 202
       DUP
-      8 PUSHINT             	//  now_time storage len len '65=8
-      MOD                   	//  now_time storage len '66
-      202 THROWIF           	//  now_time storage len
-      // 43: assert (checkDomainString(storage.domain)) throw 203
-      OVER                  	//  now_time storage len domain
+      8 PUSHINT             	//  now_time msg.USlot1 len len '64=8
+      MOD                   	//  now_time msg.USlot1 len '65
+      202 THROWIF           	//  now_time msg.USlot1 len
+      // 42: assert (checkDomainString(msg.domain)) throw 203
+      OVER                  	//  now_time msg.USlot1 len domain
       // 14: var i: int = 0
-      0 PUSHINT             	//  now_time storage len domain i=0
+      0 PUSHINT             	//  now_time msg.USlot1 len domain i=0
       // 15: var len: int = domain.remainingBitsCount()
-      OVER                  	//  now_time storage len domain i=0 domain
-      SBITS                 	//  now_time storage len domain i=0 len
+      OVER                  	//  now_time msg.USlot1 len domain i=0 domain
+      SBITS                 	//  now_time msg.USlot1 len domain i=0 len
       // 17: do
       // ...32: while (!needBreak)
       UNTIL:<{
-        2DUP                	//  now_time storage len domain i len i len
+        2DUP                	//  now_time msg.USlot1 len domain i len i len
         // 18: needBreak = i == len
-        EQUAL               	//  now_time storage len domain i len needBreak
+        EQUAL               	//  now_time msg.USlot1 len domain i len needBreak
         // 19: if (!needBreak)
-        DUP                 	//  now_time storage len domain i len needBreak needBreak
-        IFNOT:<{            	//  now_time storage len domain i len needBreak
+        DUP                 	//  now_time msg.USlot1 len domain i len needBreak needBreak
+        IFNOT:<{            	//  now_time msg.USlot1 len domain i len needBreak
           // 20: var char: int = domain.loadUint(8)
-          DROP              	//  now_time storage len domain i len
-          s0 s2 XCHG        	//  now_time storage len len i domain
-          8 LDU             	//  now_time storage len len i char domain
+          DROP              	//  now_time msg.USlot1 len domain i len
+          s0 s2 XCHG        	//  now_time msg.USlot1 len len i domain
+          8 LDU             	//  now_time msg.USlot1 len len i char domain
           // 22: var isHyphen: bool = (char == 45)
-          OVER              	//  now_time storage len len i char domain char
-          45 EQINT          	//  now_time storage len len i char domain isHyphen
+          OVER              	//  now_time msg.USlot1 len len i char domain char
+          45 EQINT          	//  now_time msg.USlot1 len len i char domain isHyphen
           // 23: var validChar: bool = (isHyphen & (i > 0) & (i < len - 8)) |
-          s3 PUSH           	//  now_time storage len len i char domain isHyphen i
-          0 GTINT           	//  now_time storage len len i char domain isHyphen '89
-          AND               	//  now_time storage len len i char domain '90
-          s4 PUSH           	//  now_time storage len len i char domain '90 len
-          -8 ADDCONST       	//  now_time storage len len i char domain '90 '92
-          s4 PUSH           	//  now_time storage len len i char domain '90 '92 i
-          GREATER           	//  now_time storage len len i char domain '90 '93
-          AND               	//  now_time storage len len i char domain '94
+          s3 PUSH           	//  now_time msg.USlot1 len len i char domain isHyphen i
+          0 GTINT           	//  now_time msg.USlot1 len len i char domain isHyphen '88
+          AND               	//  now_time msg.USlot1 len len i char domain '89
+          s4 PUSH           	//  now_time msg.USlot1 len len i char domain '89 len
+          -8 ADDCONST       	//  now_time msg.USlot1 len len i char domain '89 '91
+          s4 PUSH           	//  now_time msg.USlot1 len len i char domain '89 '91 i
+          GREATER           	//  now_time msg.USlot1 len len i char domain '89 '92
+          AND               	//  now_time msg.USlot1 len len i char domain '93
           // 24: ((char >= 48) & (char <= 57)) |
-          s2 PUSH           	//  now_time storage len len i char domain '94 char
-          47 GTINT          	//  now_time storage len len i char domain '94 '96
-          s3 PUSH           	//  now_time storage len len i char domain '94 '96 char
-          58 LESSINT        	//  now_time storage len len i char domain '94 '96 '98
-          AND               	//  now_time storage len len i char domain '94 '99
+          s2 PUSH           	//  now_time msg.USlot1 len len i char domain '93 char
+          47 GTINT          	//  now_time msg.USlot1 len len i char domain '93 '95
+          s3 PUSH           	//  now_time msg.USlot1 len len i char domain '93 '95 char
+          58 LESSINT        	//  now_time msg.USlot1 len len i char domain '93 '95 '97
+          AND               	//  now_time msg.USlot1 len len i char domain '93 '98
           // 23: var validChar: bool = (isHyphen & (i > 0) & (i < len - 8)) |
           // ...24: ((char >= 48) & (char <= 57))
-          OR                	//  now_time storage len len i char domain '100
+          OR                	//  now_time msg.USlot1 len len i char domain '99
           // 25: ((char >= 97) & (char <= 122)); // '-' or 0-9 or a-z
-          s2 PUSH           	//  now_time storage len len i char domain '100 char
-          96 GTINT          	//  now_time storage len len i char domain '100 '102
-          s0 s3 XCHG        	//  now_time storage len len i '102 domain '100 char
-          123 LESSINT       	//  now_time storage len len i '102 domain '100 '104
-          s1 s3 XCHG        	//  now_time storage len len i '100 domain '102 '104
-          AND               	//  now_time storage len len i '100 domain '105
+          s2 PUSH           	//  now_time msg.USlot1 len len i char domain '99 char
+          96 GTINT          	//  now_time msg.USlot1 len len i char domain '99 '101
+          s0 s3 XCHG        	//  now_time msg.USlot1 len len i '101 domain '99 char
+          123 LESSINT       	//  now_time msg.USlot1 len len i '101 domain '99 '103
+          s1 s3 XCHG        	//  now_time msg.USlot1 len len i '99 domain '101 '103
+          AND               	//  now_time msg.USlot1 len len i '99 domain '104
           // 23: var validChar: bool = (isHyphen & (i > 0) & (i < len - 8)) |
           // ...25: ((char >= 97) & (char <= 122))
-          s1 s2 XCHG        	//  now_time storage len len i domain '100 '105
-          OR                	//  now_time storage len len i domain validChar
+          s1 s2 XCHG        	//  now_time msg.USlot1 len len i domain '99 '104
+          OR                	//  now_time msg.USlot1 len len i domain validChar
           // 27: needBreak = !validChar
-          NOT               	//  now_time storage len len i domain needBreak
+          NOT               	//  now_time msg.USlot1 len len i domain needBreak
           // 28: if (!needBreak)
-          DUP               	//  now_time storage len len i domain needBreak needBreak
-          IFNOT:<{          	//  now_time storage len len i domain needBreak
+          DUP               	//  now_time msg.USlot1 len len i domain needBreak needBreak
+          IFNOT:<{          	//  now_time msg.USlot1 len len i domain needBreak
             // 29: i += 8
-            s0 s2 XCHG      	//  now_time storage len len needBreak domain i
-            8 ADDCONST      	//  now_time storage len len needBreak domain i
+            s0 s2 XCHG      	//  now_time msg.USlot1 len len needBreak domain i
+            8 ADDCONST      	//  now_time msg.USlot1 len len needBreak domain i
             // 28: if (!needBreak)
-            s0 s2 XCHG      	//  now_time storage len len i domain needBreak
-          }>                	//  now_time storage len len i domain needBreak
+            s0 s2 XCHG      	//  now_time msg.USlot1 len len i domain needBreak
+          }>                	//  now_time msg.USlot1 len len i domain needBreak
           // 19: if (!needBreak)
-          s1 s3 XCHG        	//  now_time storage len domain i len needBreak
-        }>                  	//  now_time storage len domain i len '111
-      }>                    	//  now_time storage len domain i len
+          s1 s3 XCHG        	//  now_time msg.USlot1 len domain i len needBreak
+        }>                  	//  now_time msg.USlot1 len domain i len '110
+      }>                    	//  now_time msg.USlot1 len domain i len
       // 33: return i == len
-      s2 POP                	//  now_time storage len len i
-      EQUAL                 	//  now_time storage len '71
-      // 43: assert (checkDomainString(storage.domain)) throw 203
-      203 THROWIFNOT        	//  now_time storage len
-      // 44: assert (in.valueCoins >= minPrice(len, now_time)) throw 204
-      INMSG_VALUE           	//  now_time storage len '114
-      s0 s3 XCHG            	//  '114 storage len now_time
-      minPrice() CALLDICT   	//  '114 storage '116
-      s1 s2 XCHG            	//  storage '114 '116
-      GEQ                   	//  storage '117
-      204 THROWIFNOT        	//  storage
-      // 45: val itemIndex: int = storage.domain.hash()
-      DUP                   	//  storage storage
-      HASHSU                	//  storage itemIndex
-      // 47: val config: cell? = blockchain.configParam(DNS_CONFIG_ID)
-      80 PUSHINT            	//  storage itemIndex '121=80
-      CONFIGOPTPARAM        	//  storage itemIndex config
-      // 48: if (config != null)
-      DUP                   	//  storage itemIndex config config
-      ISNULL                	//  storage itemIndex config '123
-      IFNOT:<{              	//  storage itemIndex config
-        // 49: val element = config.beginParse().loadDict().uDictGet(256, itemIndex)
-        CTOS                	//  storage itemIndex '126
-        PLDDICT             	//  storage itemIndex '129
+      s2 POP                	//  now_time msg.USlot1 len len i
+      EQUAL                 	//  now_time msg.USlot1 len '70
+      // 42: assert (checkDomainString(msg.domain)) throw 203
+      203 THROWIFNOT        	//  now_time msg.USlot1 len
+      // 43: assert (in.valueCoins >= minPrice(len, now_time)) throw 204
+      INMSG_VALUE           	//  now_time msg.USlot1 len '113
+      s0 s3 XCHG            	//  '113 msg.USlot1 len now_time
+      minPrice() CALLDICT   	//  '113 msg.USlot1 '115
+      s1 s2 XCHG            	//  msg.USlot1 '113 '115
+      GEQ                   	//  msg.USlot1 '116
+      204 THROWIFNOT        	//  msg.USlot1
+      // 44: val itemIndex: int = msg.domain.hash()
+      DUP                   	//  msg.USlot1 msg.USlot1
+      HASHSU                	//  msg.USlot1 itemIndex
+      // 46: val config: cell? = blockchain.configParam(DNS_CONFIG_ID)
+      80 PUSHINT            	//  msg.USlot1 itemIndex '120=80
+      CONFIGOPTPARAM        	//  msg.USlot1 itemIndex config
+      // 47: if (config != null)
+      DUP                   	//  msg.USlot1 itemIndex config config
+      ISNULL                	//  msg.USlot1 itemIndex config '122
+      IFNOT:<{              	//  msg.USlot1 itemIndex config
+        // 48: val element = config.beginParse().loadDict().uDictGet(256, itemIndex)
+        CTOS                	//  msg.USlot1 itemIndex '125
+        PLDDICT             	//  msg.USlot1 itemIndex '128
         s1 s(-1) PUXC
-        8 PUSHPOW2          	//  storage itemIndex itemIndex '129 '130=256
+        8 PUSHPOW2          	//  msg.USlot1 itemIndex itemIndex '128 '129=256
         DICTUGET
-        NULLSWAPIFNOT       	//  storage itemIndex '131 '132
-        NIP                 	//  storage itemIndex element.1
-        // 50: assert (!element.1) throw 205
-        205 THROWIF         	//  storage itemIndex
+        NULLSWAPIFNOT       	//  msg.USlot1 itemIndex '130 '131
+        NIP                 	//  msg.USlot1 itemIndex element.1
+        // 49: assert (!element.1) throw 205
+        205 THROWIF         	//  msg.USlot1 itemIndex
       }>ELSE<{
-        // 48: if (config != null)
-        DROP                	//  storage itemIndex
+        // 47: if (config != null)
+        DROP                	//  msg.USlot1 itemIndex
       }>
       // 59: return NftCollectionStorage.fromCell(contract.getData())
-      c4 PUSH               	//  storage itemIndex '138
-      // 53: val nftStorage = lazy NftCollectionStorage.load()
-      CTOS                  	//  storage itemIndex lazyS
-      // 55: sender: in.senderAddress
-      INMSG_SRC             	//  storage itemIndex lazyS '144
-      // 56: domain: Domain { domain: storage.domain }.toCell()
+      c4 PUSH               	//  msg.USlot1 itemIndex '137
+      // 52: val nftStorage = lazy NftCollectionStorage.load()
+      CTOS                  	//  msg.USlot1 itemIndex lazyS
+      // 54: sender: in.senderAddress
+      INMSG_SRC             	//  msg.USlot1 itemIndex lazyS '143
+      // 55: domain: Domain { domain: msg.domain }.toCell()
       s0 s3 XCHG
-      NEWC                  	//  '144 itemIndex lazyS storage b
-      STSLICE               	//  '144 itemIndex lazyS b
+      NEWC                  	//  '143 itemIndex lazyS msg.USlot1 b
+      STSLICE               	//  '143 itemIndex lazyS b
       ENDC                  	//  nftContent.sender itemIndex lazyS nftContent.domain
-      // 59: deployNftItem(itemIndex, nftStorage.nftItemCode, nftContent)
+      // 58: deployNftItem(itemIndex, nftStorage.nftItemCode, nftContent)
       SWAP                  	//  nftContent.sender itemIndex nftContent.domain lazyS
-      LDREF                 	//  nftContent.sender itemIndex nftContent.domain '149 lazyS
+      LDREF                 	//  nftContent.sender itemIndex nftContent.domain '148 lazyS
       NIP                   	//  nftContent.sender itemIndex nftContent.domain lazyS
       PLDREF                	//  nftContent.sender itemIndex nftContent.domain nftStorage.nftItemCode
       // 13: dest: calcDeployedNftItem(itemIndex, contract.getAddress(), nftItemCode)
@@ -328,57 +323,57 @@ PROGRAM{
       256 STU               	//  nftContent.sender emptyNftItemStorage.collectionAddress nftContent.domain nftStorage.nftItemCode b
       s1 s3 XCHG            	//  nftContent.sender nftStorage.nftItemCode nftContent.domain emptyNftItemStorage.collectionAddress b
       STSTDADDR             	//  nftContent.sender nftStorage.nftItemCode nftContent.domain b
-      ENDC                  	//  '190 'USlot2 '191 'USlot3
+      ENDC                  	//  '189 'USlot2 '190 'USlot3
       // 11: val deployMsg = createMessage(
-      NEWC                  	//  '190 'USlot2 '191 'USlot3 b
-      b{01100010000000000} STSLICECONST	//  '190 'USlot2 '191 'USlot3 b
-      s1 s3 PUSH2           	//  '190 'USlot2 '191 'USlot3 b 'USlot3 'USlot2
+      NEWC                  	//  '189 'USlot2 '190 'USlot3 b
+      b{01100010000000000} STSLICECONST	//  '189 'USlot2 '190 'USlot3 b
+      s1 s3 PUSH2           	//  '189 'USlot2 '190 'USlot3 b 'USlot3 'USlot2
       NEWC
       b{00110} STSLICECONST
       STREF
       STREF
-      HASHBU                	//  '190 'USlot2 '191 'USlot3 b '212
-      256 STUR              	//  '190 'USlot2 '191 'USlot3 b
+      HASHBU                	//  '189 'USlot2 '190 'USlot3 b '211
+      256 STUR              	//  '189 'USlot2 '190 'USlot3 b
       140 PUSHINT
-      117 STUR              	//  '190 'USlot2 '191 'USlot3 b
-      s1 s3 XCHG            	//  '190 'USlot3 '191 'USlot2 b
-      STREF                 	//  '190 'USlot3 '191 b
-      s1 s2 XCHG            	//  '190 '191 'USlot3 b
-      STREF                 	//  '190 '191 b
-      s1 s2 XCHG            	//  '191 '190 b
-      STSTDADDR             	//  '191 b
+      117 STUR              	//  '189 'USlot2 '190 'USlot3 b
+      s1 s3 XCHG            	//  '189 'USlot3 '190 'USlot2 b
+      STREF                 	//  '189 'USlot3 '190 b
+      s1 s2 XCHG            	//  '189 '190 'USlot3 b
+      STREF                 	//  '189 '190 b
+      s1 s2 XCHG            	//  '190 '189 b
+      STSTDADDR             	//  '190 b
       STREF                 	//  b
       ENDC                  	//  deployMsg
       // 17: deployMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE)
-      64 PUSHINT            	//  deployMsg '256=64
+      64 PUSHINT            	//  deployMsg '255=64
       SENDRAWMSG            	// 
-    }>                      	//  in.body
-    // 63: throw 0xffff
+    }>                      	//  lazyS
+    // 62: throw 0xffff
     16 PUSHPOW2DEC
     THROWANY
   }>
-  // nft-collection.tolk:74
+  // nft-collection.tolk:73
   get_collection_data() PROC:<{	// 
     // 59: return NftCollectionStorage.fromCell(contract.getData())
     c4 PUSH                 	//  '3
-    // 75: val storage = lazy NftCollectionStorage.load()
+    // 74: val storage = lazy NftCollectionStorage.load()
     CTOS                    	//  lazyS
-    // 77: return
+    // 76: return
     PLDREF                  	//  storage.content
-    // 78: nextItemIndex: -1
+    // 77: nextItemIndex: -1
     -1 PUSHINT              	//  storage.content '8=-1
-    // 77: return
+    // 76: return
     SWAP
-    // 80: adminAddress: null
+    // 79: adminAddress: null
     PUSHNULL                	//  '8=-1 storage.content '9
   }>
-  // nft-collection.tolk:84
+  // nft-collection.tolk:83
   get_nft_address_by_index() PROC:<{	//  itemIndex
     // 59: return NftCollectionStorage.fromCell(contract.getData())
     c4 PUSH                 	//  itemIndex '4
-    // 85: val storage = lazy NftCollectionStorage.load()
+    // 84: val storage = lazy NftCollectionStorage.load()
     CTOS                    	//  itemIndex lazyS
-    // 86: val nftDeployed = calcDeployedNftItem(itemIndex, contract.getAddress(), storage.nftItemCode)
+    // 85: val nftDeployed = calcDeployedNftItem(itemIndex, contract.getAddress(), storage.nftItemCode)
     LDREF                   	//  itemIndex '8 lazyS
     NIP                     	//  itemIndex lazyS
     PLDREF                  	//  itemIndex storage.nftItemCode
@@ -390,7 +385,7 @@ PROGRAM{
     s1 s2 XCHG              	//  storage.nftItemCode emptyNftItemStorage.collectionAddress b
     STSTDADDR               	//  storage.nftItemCode b
     ENDC                    	//  nftDeployed.stateInit.USlot1 nftDeployed.stateInit.USlot2
-    // 88: return nftDeployed.calculateAddress()
+    // 87: return nftDeployed.calculateAddress()
     SWAP                    	//  nftDeployed.stateInit.USlot2 nftDeployed.stateInit.USlot1
     NEWC
     b{00110} STSLICECONST
@@ -402,27 +397,27 @@ PROGRAM{
     256 STU                 	//  '36
     BTOS                    	//  '36
   }>
-  // nft-collection.tolk:91
+  // nft-collection.tolk:90
   get_nft_content() PROC:<{   	//  itemIndex individualNftContent
-    // 92: return individualNftContent
+    // 91: return individualNftContent
     NIP                     	//  individualNftContent
   }>
-  // nft-collection.tolk:95
+  // nft-collection.tolk:94
   dnsresolve() PROC:<{        	//  subdomain category
-    // 96: val subdomainLen = subdomain.remainingBitsCount()
+    // 95: val subdomainLen = subdomain.remainingBitsCount()
     DROP                    	//  subdomain
     DUP                     	//  subdomain subdomain
     SBITS                   	//  subdomain subdomainLen
-    // 98: assert (mod(subdomainLen, 8) == 0) throw 70
+    // 97: assert (mod(subdomainLen, 8) == 0) throw 70
     DUP
     8 PUSHINT               	//  subdomain subdomainLen subdomainLen '5=8
     MOD                     	//  subdomain subdomainLen '6
     70 THROWIF              	//  subdomain subdomainLen
-    // 100: val startsWithZeroByte: bool = subdomain.preloadInt(8) == 0
+    // 99: val startsWithZeroByte: bool = subdomain.preloadInt(8) == 0
     OVER                    	//  subdomain subdomainLen subdomain
     8 PLDI                  	//  subdomain subdomainLen '11
     0 EQINT                 	//  subdomain subdomainLen startsWithZeroByte
-    // 102: if (startsWithZeroByte && subdomainLen == 8)
+    // 101: if (startsWithZeroByte && subdomainLen == 8)
     DUP                     	//  subdomain subdomainLen startsWithZeroByte startsWithZeroByte
     IF:<{                   	//  subdomain subdomainLen startsWithZeroByte
       SWAP                  	//  subdomain startsWithZeroByte subdomainLen
@@ -434,21 +429,21 @@ PROGRAM{
     }>
     IFJMP:<{                	//  subdomain startsWithZeroByte
       2DROP                 	// 
-      // 103: return (8, null)
+      // 102: return (8, null)
       8 PUSHINT             	//  '20=8
       PUSHNULL              	//  '20=8 '21
     }>                      	//  subdomain startsWithZeroByte
-    // 106: if (startsWithZeroByte)
+    // 105: if (startsWithZeroByte)
     DUP                     	//  subdomain startsWithZeroByte startsWithZeroByte
     IF:<{                   	//  subdomain startsWithZeroByte
-      // 107: subdomain.loadUint(8)
+      // 106: subdomain.loadUint(8)
       SWAP                  	//  startsWithZeroByte subdomain
       8 LDU                 	//  startsWithZeroByte '24 '23
       NIP                   	//  startsWithZeroByte subdomain
-      // 106: if (startsWithZeroByte)
+      // 105: if (startsWithZeroByte)
       SWAP                  	//  subdomain startsWithZeroByte
     }>                      	//  subdomain startsWithZeroByte
-    // 110: val topSubdomainBits: int = topDomainBits(subdomain)
+    // 109: val topSubdomainBits: int = topDomainBits(subdomain)
     OVER                    	//  subdomain startsWithZeroByte domain
     // 37: var i: int = 0
     0 PUSHINT               	//  subdomain startsWithZeroByte domain i=0
@@ -478,17 +473,17 @@ PROGRAM{
     DUP                     	//  subdomain startsWithZeroByte i i
     201 THROWIFNOT          	//  subdomain startsWithZeroByte topSubdomainBits
     s2 s2 XCPU              	//  topSubdomainBits startsWithZeroByte subdomain topSubdomainBits
-    // 111: val item_index = subdomain.loadBits(topSubdomainBits).hash()
+    // 110: val item_index = subdomain.loadBits(topSubdomainBits).hash()
     PLDSLICEX               	//  topSubdomainBits startsWithZeroByte '49
     HASHSU                  	//  topSubdomainBits startsWithZeroByte item_index
-    // 114: topSubdomainBits + (startsWithZeroByte ? 8 : 0)
+    // 113: topSubdomainBits + (startsWithZeroByte ? 8 : 0)
     SWAP
     8 PUSHINT
     0 PUSHINT               	//  topSubdomainBits item_index startsWithZeroByte '52=8 '53=0
     CONDSEL                 	//  topSubdomainBits item_index '51
     s1 s2 XCHG              	//  item_index topSubdomainBits '51
     ADD                     	//  item_index '54
-    // 115: ResolveResponse { next: get_nft_address_by_index(item_index) }.toCell()
+    // 114: ResolveResponse { next: get_nft_address_by_index(item_index) }.toCell()
     SWAP                    	//  '54 item_index
     get_nft_address_by_index() CALLDICT	//  '54 '55
     NEWC                    	//  '54 '55 b

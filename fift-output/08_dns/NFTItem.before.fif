@@ -139,7 +139,7 @@ PROGRAM{
     DUP                     	//  '14 '15=0 '16=0
   }>
   // nft-item.tolk:30
-  auctionCheck() PROCINLINE:<{	//  storage.itemIndex storage.collectionAddress storage.ownerAddress storage.content storage.domain storage.auction storage.lastFillUpTime msgBalance queryID auctionComplete
+  auctionCheck() PROCREF:<{   	//  storage.itemIndex storage.collectionAddress storage.ownerAddress storage.content storage.domain storage.auction storage.lastFillUpTime msgBalance queryID auctionComplete
     // 36: if (!auctionComplete || storage.auction == null)
     NOT                     	//  storage.itemIndex storage.collectionAddress storage.ownerAddress storage.content storage.domain storage.auction storage.lastFillUpTime msgBalance queryID '10
     IF:<{                   	//  storage.itemIndex storage.collectionAddress storage.ownerAddress storage.content storage.domain storage.auction storage.lastFillUpTime msgBalance queryID
@@ -149,87 +149,86 @@ PROGRAM{
       ISNULL                	//  storage.itemIndex storage.collectionAddress storage.ownerAddress storage.content storage.domain storage.auction storage.lastFillUpTime msgBalance queryID '13
       0 NEQINT              	//  storage.itemIndex storage.collectionAddress storage.ownerAddress storage.content storage.domain storage.auction storage.lastFillUpTime msgBalance queryID '11
     }>
-    IF:<{                   	//  storage.itemIndex storage.collectionAddress storage.ownerAddress storage.content storage.domain storage.auction storage.lastFillUpTime msgBalance queryID
+    IFJMP:<{                	//  storage.itemIndex storage.collectionAddress storage.ownerAddress storage.content storage.domain storage.auction storage.lastFillUpTime msgBalance queryID
       2DROP                 	//  storage.itemIndex storage.collectionAddress storage.ownerAddress storage.content storage.domain storage.auction storage.lastFillUpTime
-    }>ELSE<{                	//  storage.itemIndex storage.collectionAddress storage.ownerAddress storage.content storage.domain storage.auction storage.lastFillUpTime msgBalance queryID
-      s6 POP                	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain storage.auction storage.lastFillUpTime msgBalance
-      // 40: val auction = unpackAuction(storage.auction)
-      s0 s2 XCHG            	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain msgBalance storage.lastFillUpTime storage.auction
-      unpackAuction() CALLDICT	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain msgBalance storage.lastFillUpTime '19 '20 '21
-      DROP                  	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain msgBalance storage.lastFillUpTime auction.0 auction.1
-      // 41: var myBalance = contract.getOriginalBalance()
-      BALANCE
-      FIRST                 	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain msgBalance storage.lastFillUpTime auction.0 auction.1 myBalance
-      s0 s4 PUXC            	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain myBalance storage.lastFillUpTime auction.0 auction.1 myBalance msgBalance
-      // 42: val balanceWithoutMsg = myBalance - msgBalance
-      SUB                   	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain myBalance storage.lastFillUpTime auction.0 auction.1 '25
-      s4 POP                	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0 auction.1
-      // 43: val amountToSend: coins = (auction.1 > balanceWithoutMsg - MIN_TONS_FOR_STORAGE)
-      s3 PUSH
-      1000000000 PUSHINT    	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0 auction.1 balanceWithoutMsg '27=1000000000
-      SUB                   	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0 auction.1 '28
-      OVER                  	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0 auction.1 '28 auction.1
-      LESS                  	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0 auction.1 '29
+    }>                      	//  storage.itemIndex storage.collectionAddress storage.ownerAddress storage.content storage.domain storage.auction storage.lastFillUpTime msgBalance queryID
+    // 40: val auction = unpackAuction(storage.auction)
+    s6 POP                  	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain storage.auction storage.lastFillUpTime msgBalance
+    s0 s2 XCHG              	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain msgBalance storage.lastFillUpTime storage.auction
+    unpackAuction() CALLDICT	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain msgBalance storage.lastFillUpTime '19 '20 '21
+    DROP                    	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain msgBalance storage.lastFillUpTime auction.0 auction.1
+    // 41: var myBalance = contract.getOriginalBalance()
+    BALANCE
+    FIRST                   	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain msgBalance storage.lastFillUpTime auction.0 auction.1 myBalance
+    s0 s4 PUXC              	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain myBalance storage.lastFillUpTime auction.0 auction.1 myBalance msgBalance
+    // 42: val balanceWithoutMsg = myBalance - msgBalance
+    SUB                     	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain myBalance storage.lastFillUpTime auction.0 auction.1 '25
+    s4 POP                  	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0 auction.1
+    // 43: val amountToSend: coins = (auction.1 > balanceWithoutMsg - MIN_TONS_FOR_STORAGE)
+    s3 PUSH
+    1000000000 PUSHINT      	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0 auction.1 balanceWithoutMsg '27=1000000000
+    SUB                     	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0 auction.1 '28
+    OVER                    	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0 auction.1 '28 auction.1
+    LESS                    	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0 auction.1 '29
+    // 45: : auction.1
+    IF:<{                   	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0 auction.1
+      // 44: ? (balanceWithoutMsg - MIN_TONS_FOR_STORAGE)
+      DROP                  	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0
+      s0 s2 XCHG
+      1000000000 PUSHINT    	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime balanceWithoutMsg '31=1000000000
+      SUB                   	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime '30
+    }>ELSE<{                	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0 auction.1
       // 45: : auction.1
-      IF:<{                 	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0 auction.1
-        // 44: ? (balanceWithoutMsg - MIN_TONS_FOR_STORAGE)
-        DROP                	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0
-        s0 s2 XCHG
-        1000000000 PUSHINT  	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime balanceWithoutMsg '31=1000000000
-        SUB                 	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime '30
-      }>ELSE<{              	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain balanceWithoutMsg storage.lastFillUpTime auction.0 auction.1
-        // 45: : auction.1
-        s3 POP              	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain '30 storage.lastFillUpTime auction.0
-        // 43: val amountToSend: coins = (auction.1 > balanceWithoutMsg - MIN_TONS_FOR_STORAGE)
-        // ...45: : auction.1
-        s0 s2 XCHG          	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime '30
-      }>                    	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend
-      // 47: if (amountToSend > 0)
-      DUP                   	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend amountToSend
-      0 GTINT               	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend '34
-      IF:<{                 	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend
-        // 48: val msg = createMessage(
-        NEWC                	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend b
-        b{010000} STSLICECONST	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend b
-        s7 s(-1) PUXC       	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend storage.collectionAddress b
-        STSTDADDR           	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend b
-        OVER                	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend b amountToSend
-        STGRAMS             	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend b
-        NIP                 	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime b
-        923790417 PUSHINT
-        139 STUR            	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime b
-        s1 s5 XCHG          	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain auction.0 queryID b
-        64 STU              	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain auction.0 b
-        ENDC                	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain auction.0 msg
-        // 55: msg.send(SEND_MODE_IGNORE_ERRORS)
-        2 PUSHINT           	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain auction.0 msg '114=2
-        SENDRAWMSG          	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain auction.0
-      }>ELSE<{
-        DROP
-        s4 POP              	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain auction.0
-      }>                    	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress
-      // 60: storage.auction = null
-      PUSHNULL              	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction
-      // 50: contract.setData(self.toCell())
-      s6 PUSH
-      NEWC                  	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction storage.itemIndex b
-      256 STU               	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b
-      s6 s(-1) PUXC         	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction storage.collectionAddress b
-      STSTDADDR             	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b
-      s2 s(-1) PUXC         	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction storage.ownerAddress b
-      STOPTSTDADDR          	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b
-      s4 PUSH               	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b storage.content
-      STREFR                	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b
-      s3 PUSH               	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b storage.domain
-      STREFR                	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b
-      s1 s(-1) PUXC         	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction storage.auction b
-      STOPTREF              	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b
-      s5 PUSH               	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b storage.lastFillUpTime
-      64 STUR               	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b
-      ENDC                  	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction '121
-      c4 POP                	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction
-      s0 s4 XCHG2           	//  storage.itemIndex storage.collectionAddress storage.ownerAddress storage.content storage.domain storage.auction storage.lastFillUpTime
-    }>
+      s3 POP                	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain '30 storage.lastFillUpTime auction.0
+      // 43: val amountToSend: coins = (auction.1 > balanceWithoutMsg - MIN_TONS_FOR_STORAGE)
+      // ...45: : auction.1
+      s0 s2 XCHG            	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime '30
+    }>                      	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend
+    // 47: if (amountToSend > 0)
+    DUP                     	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend amountToSend
+    0 GTINT                 	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend '34
+    IF:<{                   	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend
+      // 48: val msg = createMessage(
+      NEWC                  	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend b
+      b{010000} STSLICECONST	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend b
+      s7 s(-1) PUXC         	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend storage.collectionAddress b
+      STSTDADDR             	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend b
+      OVER                  	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend b amountToSend
+      STGRAMS               	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime amountToSend b
+      NIP                   	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime b
+      923790417 PUSHINT
+      139 STUR              	//  storage.itemIndex storage.collectionAddress queryID storage.content storage.domain auction.0 storage.lastFillUpTime b
+      s1 s5 XCHG            	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain auction.0 queryID b
+      64 STU                	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain auction.0 b
+      ENDC                  	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain auction.0 msg
+      // 55: msg.send(SEND_MODE_IGNORE_ERRORS)
+      2 PUSHINT             	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain auction.0 msg '114=2
+      SENDRAWMSG            	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain auction.0
+    }>ELSE<{
+      DROP
+      s4 POP                	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain auction.0
+    }>                      	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress
+    // 60: storage.auction = null
+    PUSHNULL                	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction
+    // 50: contract.setData(self.toCell())
+    s6 PUSH
+    NEWC                    	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction storage.itemIndex b
+    256 STU                 	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b
+    s6 s(-1) PUXC           	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction storage.collectionAddress b
+    STSTDADDR               	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b
+    s2 s(-1) PUXC           	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction storage.ownerAddress b
+    STOPTSTDADDR            	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b
+    s4 PUSH                 	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b storage.content
+    STREFR                  	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b
+    s3 PUSH                 	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b storage.domain
+    STREFR                  	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b
+    s1 s(-1) PUXC           	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction storage.auction b
+    STOPTREF                	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b
+    s5 PUSH                 	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b storage.lastFillUpTime
+    64 STUR                 	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction b
+    ENDC                    	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction '121
+    c4 POP                  	//  storage.itemIndex storage.collectionAddress storage.lastFillUpTime storage.content storage.domain storage.ownerAddress storage.auction
+    s0 s4 XCHG2             	//  storage.itemIndex storage.collectionAddress storage.ownerAddress storage.content storage.domain storage.auction storage.lastFillUpTime
   }>
   // nft-item.tolk:64
   transwerOwnership() PROC:<{ 	//  originalForwardFee forwardTonAmount newOwnerAddress sendExcessesTo queryId forwardPayload storage.itemIndex storage.collectionAddress storage.ownerAddress storage.content storage.domain storage.auction storage.lastFillUpTime
