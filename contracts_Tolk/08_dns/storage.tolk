@@ -11,11 +11,6 @@ struct NftItemStorageMaybeNotInitialized {
     contractData: slice
 }
 
-struct CreaterResponse {
-    op: uint32
-    queryID: uint64
-}
-
 // how do we detect whether it's initialized or not?
 // the answer: when "inited", we store `content` (cell),
 // so, we have a ref, and for uninited, we don't have a ref

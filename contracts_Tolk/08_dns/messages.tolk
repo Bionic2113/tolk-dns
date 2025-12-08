@@ -1,3 +1,7 @@
+struct (0x00000000) CreaterResponse {
+    queryID: uint64
+}
+
 struct (0x370fec51) JustFillUp {
     queryID: uint64
 }

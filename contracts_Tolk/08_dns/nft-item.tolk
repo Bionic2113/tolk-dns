@@ -26,41 +26,6 @@ fun unpackAuction(auction: cell?): (address?, coins, uint64) {
     return (null, 0, 0);
 }
 
-@inline_ref
-fun auctionCheck(
-    mutate storage: NftItemStorage,
-    msgBalance: coins,
-    queryID: uint64,
-    auctionComplete: bool,
-) {
-    if (!auctionComplete || storage.auction == null) {
-        return;
-    }
-
-    val auction = unpackAuction(storage.auction);
-    var myBalance = contract.getOriginalBalance();
-    val balanceWithoutMsg = myBalance - msgBalance;
-    val amountToSend: coins = (auction.1 > balanceWithoutMsg - MIN_TONS_FOR_STORAGE)
-        ? (balanceWithoutMsg - MIN_TONS_FOR_STORAGE)
-        : auction.1;
-
-    if (amountToSend > 0) {
-        val msg = createMessage({
-            bounce: false,
-            dest: storage.collectionAddress,
-            value: amountToSend,
-            body: JustFillUp { queryID },
-        });
-
-        msg.send(SEND_MODE_IGNORE_ERRORS);
-        myBalance -= amountToSend;
-    }
-
-    storage.ownerAddress = auction.0!;
-    storage.auction = null;
-    storage.save();
-}
-
 fun transwerOwnership(
     originalForwardFee: coins,
     forwardTonAmount: coins,
@@ -117,7 +82,6 @@ fun transwerOwnership(
 }
 
 type AllowedMessageToNftItem =
-    | AuctionCheck
     | Transfer
     | EditContent
     | ChangeDNSRecord
@@ -163,7 +127,7 @@ fun onInternalMessage(in: InMessage) {
             bounce: false,
             dest: in.body.loadAddress(),
             value: 0,
-            body: CreaterResponse { op: 0, queryID: blockchain.logicalTime() },
+            body: CreaterResponse { queryID: blockchain.logicalTime() },
         });
 
         respMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
@@ -174,59 +138,83 @@ fun onInternalMessage(in: InMessage) {
 
     val auctionComplete: bool = blockchain.now() > auction.2;
 
-    var msg = lazy AllowedMessageToNftItem.fromSlice(in.body);
+    val op = in.body.isEmpty() ? 0 : in.body.preloadUint(32);
 
-    match (msg) {
-        AuctionCheck => {
-            if (auctionComplete) {
-                assert (
-                    in.senderAddress == storage.ownerAddress!
-                ) throw 406; // only owner can fill-up balance, prevent coins lost right after the auction
-                // if owner send bid right after auction he can restore it by transfer resonse message
-                storage.lastFillUpTime = blockchain.now();
-                storage.save();
-
-                return;
-            }
-
+    if (op == 0) {
+        if (auctionComplete) {
             assert (
-                in.valueCoins >= mulDivFloor(auction.1, 105, 100)
-            ) throw 407; //  5% greater then previous bid
-
-            val myBalance = contract.getOriginalBalance();
-            val amountToSend: coins = (auction.1 > myBalance - MIN_TONS_FOR_STORAGE)
-                ? (myBalance - MIN_TONS_FOR_STORAGE)
-                : auction.1;
-
-            if (amountToSend > 0) {
-                val msg = createMessage({
-                    bounce: false,
-                    dest: auction.0!,
-                    value: amountToSend,
-                    body: Refund { queryID: blockchain.logicalTime() },
-                });
-
-                msg.send(SEND_MODE_PAY_FEES_SEPARATELY);
-            }
-
-            auction.0 = in.senderAddress;
-            auction.1 = in.valueCoins;
-
-            val deltaTime = AUCTION_PROLONGATION - (auction.2 - blockchain.now());
-            if (deltaTime > 0) {
-                auction.2 += deltaTime;
-            }
-
-            storage.auction = auction.toCell();
+                in.senderAddress == storage.ownerAddress!
+            ) throw 406; // only owner can fill-up balance, prevent coins lost right after the auction
+            // if owner send bid right after auction he can restore it by transfer resonse message
             storage.lastFillUpTime = blockchain.now();
             storage.save();
 
             return;
         }
 
-        Transfer => {
-            auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
+        assert (
+            in.valueCoins >= mulDivFloor(auction.1, 105, 100)
+        ) throw 407; //  5% greater then previous bid
 
+        val myBalance = contract.getOriginalBalance();
+        val amountToSend: coins = (auction.1 > myBalance - MIN_TONS_FOR_STORAGE)
+            ? (myBalance - MIN_TONS_FOR_STORAGE)
+            : auction.1;
+
+        if (amountToSend > 0) {
+            val msg = createMessage({
+                bounce: false,
+                dest: auction.0!,
+                value: amountToSend,
+                body: Refund { queryID: blockchain.logicalTime() },
+            });
+
+            msg.send(SEND_MODE_PAY_FEES_SEPARATELY);
+        }
+
+        auction.0 = in.senderAddress;
+        auction.1 = in.valueCoins;
+
+        val deltaTime = AUCTION_PROLONGATION - (auction.2 - blockchain.now());
+        if (deltaTime > 0) {
+            auction.2 += deltaTime;
+        }
+
+        storage.auction = auction.toCell();
+        storage.lastFillUpTime = blockchain.now();
+        storage.save();
+
+        return;
+    }
+
+    if (!auctionComplete && auction.0 != null) {
+        var myBalance = contract.getOriginalBalance();
+        val balanceWithoutMsg = myBalance - in.valueCoins;
+        val amountToSend: coins = (auction.1 > balanceWithoutMsg - MIN_TONS_FOR_STORAGE)
+            ? (balanceWithoutMsg - MIN_TONS_FOR_STORAGE)
+            : auction.1;
+
+        if (amountToSend > 0) {
+            val msg = createMessage({
+                bounce: false,
+                dest: storage.collectionAddress,
+                value: amountToSend,
+                body: JustFillUp { queryID: 0 },
+            });
+
+            msg.send(SEND_MODE_IGNORE_ERRORS);
+            myBalance -= amountToSend;
+        }
+
+        storage.ownerAddress = auction.0;
+        storage.auction = null;
+        storage.save();
+    }
+
+    var msg = lazy AllowedMessageToNftItem.fromSlice(in.body);
+
+    match (msg) {
+        Transfer => {
             assert (in.senderAddress == storage.ownerAddress!) throw ERROR_NOT_FROM_OWNER;
 
             transwerOwnership(
@@ -241,9 +229,9 @@ fun onInternalMessage(in: InMessage) {
         }
 
         EditContent => {
-            auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
-
-            assert (in.senderAddress == storage.ownerAddress!) throw 410;
+            assert (
+                storage.ownerAddress != null && in.senderAddress == storage.ownerAddress
+            ) throw 410;
 
             storage.content = msg.ref;
             storage.lastFillUpTime = blockchain.now();
@@ -251,8 +239,6 @@ fun onInternalMessage(in: InMessage) {
         }
 
         ChangeDNSRecord => {
-            auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
-
             assert (in.senderAddress == storage.ownerAddress!) throw 411;
 
             var cs = storage.content.beginParse();
@@ -272,8 +258,6 @@ fun onInternalMessage(in: InMessage) {
         }
 
         ProcessGovernanceDecision => {
-            auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
-
             assert (storage.auction == null) throw 413;
 
             var cs = blockchain.configParam(DNS_CONFIG_ID)!.beginParse();
@@ -316,8 +300,6 @@ fun onInternalMessage(in: InMessage) {
         }
 
         DNSBalanceRelease => {
-            auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
-
             assert (
                 (blockchain.now() - storage.lastFillUpTime > ONE_YEAR) && (storage.auction == null)
             ) throw 414;
@@ -348,12 +330,9 @@ fun onInternalMessage(in: InMessage) {
             storage.auction = packAuction(in.senderAddress, in.valueCoins, auctionEndTime);
 
             storage.save();
-            return;
         }
 
         StaticDataRequest => {
-            auctionCheck(mutate storage, in.valueCoins, msg.queryID, auctionComplete);
-
             val respondMsg = createMessage({
                 bounce: false,
                 dest: in.senderAddress,
@@ -374,10 +353,7 @@ fun onInternalMessage(in: InMessage) {
             respondMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
         }
 
-        else => {
-            // ignore empty messages, "wrong opcode" for others
-            assert (in.body.isEmpty()) throw 0xFFFF;
-        }
+        else => throw 0xFFFF,
     }
 }
 
