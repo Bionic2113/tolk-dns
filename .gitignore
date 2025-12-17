@@ -4,6 +4,7 @@ build
 dist
 .DS_Store
 package.ts
+*.last.json
 
 # VS Code
 .vscode/*
@@ -21,3 +22,4 @@ Session.vim
 .nvim/
 .emacs/
 .helix/
+.zed

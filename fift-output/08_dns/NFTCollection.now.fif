@@ -141,43 +141,43 @@ PROGRAM{
       1659171600 PUSHINT    	//  lazyS now_time now_time '21=1659171600
       GREATER               	//  lazyS now_time '22
       199 THROWIFNOT        	//  comment now_time
-      // 13: var domain: builder = beginCell()
+      // 17: var domain: builder = beginCell()
       NEWC                  	//  comment now_time domain
-      // 15: do
-      // ...25: while (!needBreak)
+      // 19: do
+      // ...29: while (!needBreak)
       UNTIL:<{
-        // 16: domain.storeSlice(comment.loadBits(comment.remainingBitsCount()))
+        // 20: domain.storeSlice(comment.loadBits(comment.remainingBitsCount()))
         s2 PUSH             	//  comment now_time domain comment
         SBITS               	//  comment now_time domain '32
         s1 s3 XCHG          	//  domain now_time comment '32
         LDSLICEX            	//  domain now_time '35 comment
         s0 s3 XCHG          	//  comment now_time '35 domain
         STSLICE             	//  comment now_time domain
-        // 18: val refsLen = comment.remainingRefsCount()
+        // 22: val refsLen = comment.remainingRefsCount()
         s2 PUSH             	//  comment now_time domain comment
         SREFS               	//  comment now_time domain refsLen
-        // 19: needBreak = refsLen == 0
+        // 23: needBreak = refsLen == 0
         DUP                 	//  comment now_time domain refsLen refsLen
         0 EQINT             	//  comment now_time domain refsLen needBreak
-        // 21: if (!needBreak)
+        // 25: if (!needBreak)
         DUP                 	//  comment now_time domain refsLen needBreak needBreak
         IFNOT:<{            	//  comment now_time domain refsLen needBreak
-          // 22: assert (refsLen == 1) throw 202
+          // 26: assert (refsLen == 1) throw 202
           SWAP              	//  comment now_time domain needBreak refsLen
           1 EQINT           	//  comment now_time domain needBreak '43
           202 THROWIFNOT    	//  comment now_time domain needBreak
-          // 23: comment = comment.loadRef().beginParse()
+          // 27: comment = comment.loadRef().beginParse()
           s0 s3 XCHG        	//  needBreak now_time domain comment
           PLDREF            	//  needBreak now_time domain '46
           CTOS              	//  needBreak now_time domain comment
-          // 21: if (!needBreak)
+          // 25: if (!needBreak)
           s0 s3 XCHG        	//  comment now_time domain needBreak
         }>ELSE<{
           NIP               	//  comment now_time domain needBreak
         }>                  	//  comment now_time domain '49
       }>                    	//  comment now_time domain
       1 2 BLKDROP2          	//  now_time domain
-      // 27: return domain.toSlice()
+      // 31: return domain.toSlice()
       BTOS                  	//  now_time msg.USlot1
       // 37: val len: int = msg.domain.remainingBitsCount()
       DUP                   	//  now_time msg.USlot1 msg.USlot1
@@ -299,7 +299,7 @@ PROGRAM{
         // 47: if (config != null)
         DROP                	//  msg.USlot1 itemIndex
       }>
-      // 59: return NftCollectionStorage.fromCell(contract.getData())
+      // 54: return NftCollectionStorage.fromCell(contract.getData())
       c4 PUSH               	//  msg.USlot1 itemIndex '137
       // 52: val nftStorage = lazy NftCollectionStorage.load()
       CTOS                  	//  msg.USlot1 itemIndex lazyS
@@ -317,7 +317,7 @@ PROGRAM{
       PLDREF                	//  nftContent.sender itemIndex nftContent.domain nftStorage.nftItemCode
       // 13: dest: calcDeployedNftItem(itemIndex, contract.getAddress(), nftItemCode)
       MYADDR                	//  nftContent.sender emptyNftItemStorage.itemIndex nftContent.domain nftStorage.nftItemCode emptyNftItemStorage.collectionAddress
-      // 69: return { stateInit: { code: nftItemCode, data: emptyNftItemStorage.toCell() } }
+      // 64: return { stateInit: { code: nftItemCode, data: emptyNftItemStorage.toCell() } }
       s0 s3 XCHG
       NEWC                  	//  nftContent.sender emptyNftItemStorage.collectionAddress nftContent.domain nftStorage.nftItemCode emptyNftItemStorage.itemIndex b
       256 STU               	//  nftContent.sender emptyNftItemStorage.collectionAddress nftContent.domain nftStorage.nftItemCode b
@@ -354,7 +354,7 @@ PROGRAM{
   }>
   // nft-collection.tolk:73
   get_collection_data() PROC:<{	// 
-    // 59: return NftCollectionStorage.fromCell(contract.getData())
+    // 54: return NftCollectionStorage.fromCell(contract.getData())
     c4 PUSH                 	//  '3
     // 74: val storage = lazy NftCollectionStorage.load()
     CTOS                    	//  lazyS
@@ -369,7 +369,7 @@ PROGRAM{
   }>
   // nft-collection.tolk:83
   get_nft_address_by_index() PROC:<{	//  itemIndex
-    // 59: return NftCollectionStorage.fromCell(contract.getData())
+    // 54: return NftCollectionStorage.fromCell(contract.getData())
     c4 PUSH                 	//  itemIndex '4
     // 84: val storage = lazy NftCollectionStorage.load()
     CTOS                    	//  itemIndex lazyS
@@ -378,7 +378,7 @@ PROGRAM{
     NIP                     	//  itemIndex lazyS
     PLDREF                  	//  itemIndex storage.nftItemCode
     MYADDR                  	//  emptyNftItemStorage.itemIndex storage.nftItemCode emptyNftItemStorage.collectionAddress
-    // 69: return { stateInit: { code: nftItemCode, data: emptyNftItemStorage.toCell() } }
+    // 64: return { stateInit: { code: nftItemCode, data: emptyNftItemStorage.toCell() } }
     s0 s2 XCHG
     NEWC                    	//  emptyNftItemStorage.collectionAddress storage.nftItemCode emptyNftItemStorage.itemIndex b
     256 STU                 	//  emptyNftItemStorage.collectionAddress storage.nftItemCode b

@@ -1,4 +1,4 @@
-import { Blockchain, SandboxContract, TreasuryContract, Treasury } from '@ton/sandbox';
+import { Blockchain, SandboxContract, TreasuryContract, Treasury, createShardAccount } from '@ton/sandbox';
 import {
     Address,
     beginCell,
@@ -10,6 +10,7 @@ import {
     DictionaryValue,
     contractAddress,
     StateInit,
+    ShardAccount,
 } from '@ton/core';
 import { NFTCollection, aliceIndex } from '../../wrappers/08_dns/NFTCollection';
 import { NFTItem, CONTENT, EDITED_CONTENT, CONTENT_WITH_WALLET } from '../../wrappers/08_dns/NFTItem';
@@ -20,6 +21,34 @@ import { GasLogAndSave } from '../gas-logger';
 
 const numericFolder = '08_dns';
 const MONTH = 2592000;
+
+function makeShardAccount(
+    balance: bigint,
+    addr: Address,
+    code: Cell,
+    data: Cell,
+    lt: bigint,
+    hash: bigint,
+): ShardAccount {
+    return {
+        account: {
+            addr: addr,
+            storageStats: {
+                used: { cells: 13n, bits: 4811n },
+                lastPaid: 1659171600,
+                duePayment: 0n,
+                storageExtra: null,
+            },
+            storage: {
+                lastTransLt: lt,
+                balance: { coins: balance },
+                state: { type: 'active', state: { code: code, data: data } },
+            },
+        },
+        lastTransactionHash: hash,
+        lastTransactionLt: lt,
+    };
+}
 
 describe(numericFolder, () => {
     let GAS_LOG = new GasLogAndSave(numericFolder);
@@ -298,30 +327,45 @@ describe(numericFolder, () => {
             const nftOwner = await blockchain.treasury('nft-owner');
             const someUser = await blockchain.treasury('some-user');
 
-            const nftItem = blockchain.openContract(
-                NFTItem.createFromConfig(
-                    {
-                        itemIndex: aliceIndex,
-                        collectionAddress: nftCollection.address,
-                        domain: 'alice',
-                        auction: beginCell()
-                            .storeAddress(nftOwner.address)
-                            .storeCoins(toNano('1000'))
-                            .storeUint(blockchain.now!, 64)
-                            .endCell(),
-                        lastFillUpTime: BigInt(blockchain.now!),
-                    },
-                    nftItemCode,
-                ),
-            );
+            const d = {
+                itemIndex: aliceIndex,
+                collectionAddress: nftCollection.address,
+                domain: 'alice',
+                auction: beginCell()
+                    .storeAddress(nftOwner.address)
+                    .storeCoins(toNano('1000'))
+                    .storeUint(blockchain.now!, 64)
+                    .endCell(),
+                lastFillUpTime: BigInt(blockchain.now!),
+            };
 
-            await nftItem.sendDeploy(nftOwner.getSender(), {
-                value: toNano('1000'),
-                op: 1,
-                bounce: false,
+            const data = NFTItem.configToCell(d);
+
+            const nftItem = blockchain.openContract(NFTItem.createFromConfig(d, nftItemCode));
+
+            const shard = createShardAccount({
+                address: nftItem.address,
+                code: nftItemCode,
+                data: data,
+                balance: toNano('1000'),
+                workchain: 0,
             });
 
-            blockchain.now! += 1;
+            await blockchain.setShardAccount(nftItem.address, shard);
+
+            let contract = await blockchain.getContract(nftItem.address);
+            expect(contract.accountState?.type).toBe('active');
+
+            if (contract.accountState?.type == 'active') {
+                expect(contract.accountState.state.data).toEqualCell(data);
+            }
+
+            contract = await blockchain.getContract(nftItem.address);
+            expect(contract.accountState?.type).toBe('active');
+
+            if (contract.accountState?.type == 'active') {
+                expect(contract.accountState.state.data).toEqualCell(data);
+            }
 
             const result = await nftItem.sendDeploy(nftOwner.getSender(), {
                 value: toNano('1'),
@@ -334,7 +378,7 @@ describe(numericFolder, () => {
                 to: nftCollection.address,
                 from: nftItem.address,
                 mode: 2,
-                body: beginCell().storeUint(0x370fec51, 32).storeUint(1, 64).endCell(),
+                body: beginCell().storeUint(0x370fec51, 32).storeUint(0, 64).endCell(),
                 value: (x) => {
                     return x ? toNano('999') >= x && x >= toNano('998') : false;
                 },

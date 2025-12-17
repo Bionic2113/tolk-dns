@@ -130,5 +130,27 @@
       "nft-collection bits": 4528,
       "nft-collection cells": 16
     }
+  },
+  {
+    "commitDesc": "item optimize",
+    "gas": {
+      "DEPLOY nft": 14973,
+      "TRANSFER nft": 6861,
+      "GET static data": 4371,
+      "AUCTION change content": 7216,
+      "FILL UP item": 3145,
+      "CHANGE record": 7465,
+      "CONFIG fill up": 5969,
+      "CONFIG transfer item": 8778,
+      "BID item": 6357,
+      "BID item prolong": 6393,
+      "DEPLOY nft config": 16381
+    },
+    "codeSize": {
+      "nft-item bits": 12664,
+      "nft-item cells": 33,
+      "nft-collection bits": 4528,
+      "nft-collection cells": 16
+    }
   }
 ]
